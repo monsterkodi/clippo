@@ -1,0 +1,10 @@
+body {
+  background: #222;
+  color: #fff;
+  padding-top: 2px;
+}
+pre {
+  border: 1px solid #333;
+  overflow: hidden;
+  padding: 10px;
+}

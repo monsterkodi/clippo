@@ -1,0 +1,23 @@
+name            clippo
+version         1.0.0
+description     Clipboard tool
+main            js/main.js
+scripts
+                start   electron js/main.js
+repository
+                type  git
+                url   git+https://github.com/monsterkodi/clippo.git
+keywords
+                Electron
+                copy
+                paste
+                clipboard
+                pasteboard
+author          monsterkodi
+license         Unlicense
+bugs
+                url   https://github.com/monsterkodi/clippo/issues
+devDependencies
+                electron-prebuilt  ^1.0.1
+dependencies
+                keycode   ^2.1.1
