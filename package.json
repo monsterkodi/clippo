@@ -5,7 +5,6 @@
   "main": "js/main.js",
   "scripts": {
     "start": "electron js/main.js",
-    "postinstall": "install-app-deps",
     "compile": "cp -r js css img *.html app",
     "pack": "npm run compile && build",
     "dist": "npm run compile && build"
@@ -28,20 +27,20 @@
   },
   "build": {
     "app-bundle-id": "net.monsterkodi.clippo",
-    "app-category-type": "public.app-category.tool",
+    "app-category-type": "public.app-category.utilities",
     "asar": false,
     "osx": {
       "contents": [
         {
           "x": 100,
-          "y": 80,
-          "type": "file"
-        },
-        {
-          "x": 100,
           "y": 180,
           "type": "link",
           "path": "/Applications"
+        },
+        {
+          "x": 100,
+          "y": 80,
+          "type": "file"
         }
       ]
     }
