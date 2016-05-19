@@ -4,7 +4,6 @@ description     Clipboard tool
 main            js/main.js
 scripts
                 start         electron js/main.js
-                postinstall   install-app-deps
                 compile       cp -r js css img *.html app
                 pack          npm run compile && build
                 dist          npm run compile && build
