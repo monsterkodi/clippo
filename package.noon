@@ -3,7 +3,11 @@ version         1.0.0
 description     Clipboard tool
 main            js/main.js
 scripts
-                start   electron js/main.js
+                start         electron js/main.js
+                postinstall   install-app-deps
+                compile       cp -r js css img *.html app
+                pack          npm run compile && build
+                dist          npm run compile && build
 repository
                 type  git
                 url   git+https://github.com/monsterkodi/clippo.git
@@ -17,7 +21,23 @@ author          monsterkodi
 license         Unlicense
 bugs
                 url   https://github.com/monsterkodi/clippo/issues
+build
+                app-bundle-id   net.monsterkodi.clippo
+                app-category-type  public.app-category.tool
+                asar            false
+                osx
+                  contents
+                    .
+                      x     100
+                      y     80
+                      type  file
+                    .
+                      x     100
+                      y     180
+                      type  link
+                      path  /Applications
 devDependencies
+                electron-builder  next
                 electron-prebuilt  ^1.0.1
 dependencies
                 keycode   ^2.1.1
