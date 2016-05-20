@@ -14,6 +14,7 @@ keywords
 author        monsterkodi
 license       Unlicense
 bugs
-              url   https://github.com/monsterkodi/clippo/issues
+              url  https://github.com/monsterkodi/clippo/issues
 dependencies
-              keycode   ^2.1.1
+              html-entities   ^1.2.0
+              keycode         ^2.1.1

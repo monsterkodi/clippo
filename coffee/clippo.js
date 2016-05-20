@@ -1,5 +1,5 @@
 (function() {
-  var $, buffers, clipboard, current, doPaste, electron, encode, highlight, ipc, keyname, loadBuffers, log;
+  var $, buffers, clipboard, current, doPaste, electron, highlight, ipc, keyname, loadBuffers, log;
 
   electron = require('electron');
 
@@ -13,8 +13,6 @@
 
   buffers = [];
 
-  encode = require('html-entities').XmlEntities.encode;
-
   $ = function(id) {
     return document.getElementById(id);
   };
@@ -24,7 +22,8 @@
   };
 
   doPaste = function() {
-    return ipc.send('paste', current);
+    ipc.send('paste', buffers[current]);
+    return log(current, buffers[current]);
   };
 
   highlight = function(index) {
@@ -34,37 +33,26 @@
     }
     current = Math.max(0, Math.min(index, buffers.length - 1));
     pre = $(current);
-    pre.className = 'current';
-    return pre.scrollIntoViewIfNeeded();
+    return pre.className = 'current';
   };
 
   window.onClick = function(index) {
+    log('clicked', index);
     highlight(index);
     return doPaste();
   };
 
   loadBuffers = function() {
-    var buf, encl, html, i, j, l, len;
+    var buf, html, i, j, len;
     buffers = ipc.sendSync("get-buffers");
     html = "";
     i = 0;
     for (j = 0, len = buffers.length; j < len; j++) {
       buf = buffers[j];
-      encl = (function() {
-        var k, len1, ref, results;
-        ref = buf.split("\n");
-        results = [];
-        for (k = 0, len1 = ref.length; k < len1; k++) {
-          l = ref[k];
-          results.push(encode(l));
-        }
-        return results;
-      })();
-      html = ("<pre id=" + i + " onClick='window.onClick(" + i + ");'>") + encl.join("<br>") + "</pre>\n" + html;
+      html = ("<pre id=" + i + " onClick='window.onClick(" + i + ");'>") + buf.split("\n").join("<br>") + "</pre>\n" + html;
       i += 1;
     }
-    document.body.innerHTML = html;
-    return highlight(buffers.length - 1);
+    return document.body.innerHTML = html;
   };
 
   ipc.on("reload", loadBuffers);
@@ -85,10 +73,8 @@
       case 'up':
       case 'left':
         return highlight(current + 1);
-      case 'home':
       case 'page up':
         return highlight(buffers.length - 1);
-      case 'end':
       case 'page down':
         return highlight(0);
       case 'enter':

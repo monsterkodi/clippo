@@ -1,5 +1,5 @@
 (function() {
-  var BrowserWindow, Menu, Tray, a, activateApp, activeApp, app, buffers, clipboard, createWindow, electron, getActiveApp, ipc, listenClipboard, log, proc, showWindow, toggleWindow, tray, updateActiveApp, win;
+  var BrowserWindow, Tray, activateApp, activeApp, app, buffers, clipboard, createWindow, electron, ipc, listenClipboard, log, proc, showWindow, toggleWindow, tray, updateActiveApp, win;
 
   electron = require('electron');
 
@@ -11,8 +11,6 @@
 
   Tray = electron.Tray;
 
-  Menu = electron.Menu;
-
   clipboard = electron.clipboard;
 
   ipc = electron.ipcMain;
@@ -21,14 +19,7 @@
 
   tray = void 0;
 
-  buffers = (function() {
-    var i, results;
-    results = [];
-    for (a = i = 0; i < 22; a = ++i) {
-      results.push(String(a));
-    }
-    return results;
-  })();
+  buffers = [];
 
   activeApp = "";
 
@@ -36,14 +27,9 @@
     return console.log(([].slice.call(arguments, 0)).join(" "));
   };
 
-  getActiveApp = function() {
-    var appName;
-    appName = proc.execSync("osascript -e \"tell application \\\"System Events\\\"\" -e \"set n to name of first application process whose frontmost is true\" -e \"end tell\" -e \"do shell script \\\"echo \\\" & n\"");
-    return appName = String(appName).trim();
-  };
-
   updateActiveApp = function() {
-    return activeApp = getActiveApp();
+    activeApp = proc.execSync("osascript -e \"tell application \\\"System Events\\\"\" -e \"set n to name of first application process whose frontmost is true\" -e \"end tell\" -e \"do shell script \\\"echo \\\" & n\"");
+    return activeApp = String(activeApp).trim();
   };
 
   activateApp = function() {
@@ -90,19 +76,19 @@
   ipc.on('paste', (function(_this) {
     return function(event, arg) {
       var paste;
-      clipboard.writeText(buffers[arg]);
+      clipboard.writeText(arg);
       win.close();
       paste = function() {
         return proc.exec("osascript -e \"tell application \\\"System Events\\\" to keystroke \\\"v\\\" using command down\"");
       };
-      return setTimeout(paste, 100);
+      return setTimeout(paste, 200);
     };
   })(this));
 
   createWindow = function() {
     log('create');
     win = new BrowserWindow({
-      width: 1000,
+      width: 800,
       height: 1200,
       titleBarStyle: 'hidden',
       backgroundColor: '#181818',
@@ -114,12 +100,14 @@
     win.loadURL("file://" + __dirname + "/../index.html");
     app.dock.show();
     win.on('close', function(event) {
+      log('close!');
       activateApp();
       win.hide();
       app.dock.hide();
       return event.preventDefault();
     });
     win.on('closed', function() {
+      log('closed');
       return win = null;
     });
     return win;
@@ -134,26 +122,6 @@
       app.dock.hide();
     }
     electron.globalShortcut.register('Command+Alt+V', showWindow);
-    Menu.setApplicationMenu(Menu.buildFromTemplate([
-      {
-        label: app.getName(),
-        submenu: [
-          {
-            label: 'Close Window',
-            accelerator: 'Command+W',
-            click: function() {
-              return win.close();
-            }
-          }, {
-            label: 'Quit',
-            accelerator: 'Command+Q',
-            click: function() {
-              return app.exit(0);
-            }
-          }
-        ]
-      }
-    ]));
     return listenClipboard();
   });
 

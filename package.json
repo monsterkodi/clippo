@@ -1,13 +1,14 @@
 {
   "name": "clippo",
-  "version": "1.0.0",
+  "version": "0.1.2",
   "description": "Clipboard tool",
   "main": "js/main.js",
   "scripts": {
     "start": "electron js/main.js",
     "compile": "cp -r js css img *.html app",
-    "pack": "npm run compile && build",
-    "dist": "npm run compile && build"
+    "install": "cd app && npm install",
+    "clean": "rm -rf dist app/js app/img app/css app/*.html app/node_modules",
+    "dist": "npm run clean && npm run compile && npm run install && build"
   },
   "repository": {
     "type": "git",
@@ -50,6 +51,7 @@
     "electron-prebuilt": "^1.0.1"
   },
   "dependencies": {
+    "html-entities": "^1.2.0",
     "keycode": "^2.1.1"
   }
 }

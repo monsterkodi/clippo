@@ -1,15 +1,33 @@
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-thumb {
+  -webkit-border-radius: 4px;
+  border-radius: 4px;
+  background: #333;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #666;
+}
 body {
   background: #222;
   color: #fff;
   padding-top: 2px;
+  padding-left: 4px;
 }
 pre {
   border: 1px solid #333;
-  background: #202020;
+  background: #181818;
   overflow: hidden;
   padding: 10px;
   cursor: pointer;
+  border-radius: 6px;
+}
+pre:hover {
+  background: #111;
+  border: 1px solid #666;
 }
 pre.current {
   background: #000;
+  border: 1px solid #f80;
 }
