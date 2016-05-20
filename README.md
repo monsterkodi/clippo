@@ -1,3 +1,4 @@
-# clippo
+![clippo](img/banner.png)
+
 
 
