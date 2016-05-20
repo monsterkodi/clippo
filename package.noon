@@ -1,5 +1,5 @@
 name            clippo
-version         0.9.0
+version         1.0.0
 description     Clipboard tool
 main            js/main.js
 scripts
@@ -31,15 +31,18 @@ build
                 app-category-type  public.app-category.utilities
                 asar            false
                 osx
+                  background  build/background.png
+                  target
+                    dmg
                   contents
                     .
                       x     100
-                      y     180
+                      y     182
                       type  link
                       path  /Applications
                     .
                       x     100
-                      y     80
+                      y     70
                       type  file
 devDependencies
                 electron-builder  next
