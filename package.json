@@ -1,6 +1,6 @@
 {
   "name": "clippo",
-  "version": "0.1.2",
+  "version": "0.9.0",
   "description": "Clipboard tool",
   "main": "js/main.js",
   "scripts": {
@@ -8,14 +8,19 @@
     "compile": "cp -r js css img *.html app",
     "install": "cd app && npm install",
     "clean": "rm -rf dist app/js app/img app/css app/*.html app/node_modules",
-    "dist": "npm run clean && npm run compile && npm run install && build"
+    "dist": "npm run clean && npm run compile && npm run install && build",
+    "release": "npm run clean && npm run compile && npm run install && build"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/monsterkodi/clippo.git"
   },
   "keywords": [
-    "Electron",
+    "electron",
+    "mac",
+    "osx",
+    "menu-bar",
+    "tool",
     "copy",
     "paste",
     "clipboard",
