@@ -20,7 +20,7 @@ keywords
 author          monsterkodi
 license         Unlicense
 bugs
-                url  https://github.com/monsterkodi/clippo/issues
+                url   https://github.com/monsterkodi/clippo/issues
 build
                 app-bundle-id   net.monsterkodi.clippo
                 app-category-type  public.app-category.utilities

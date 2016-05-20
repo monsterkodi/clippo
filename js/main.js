@@ -1,5 +1,5 @@
 (function() {
-  var BrowserWindow, Menu, Tray, a, activateApp, activeApp, app, buffers, clipboard, createWindow, electron, getActiveApp, ipc, listenClipboard, log, proc, showWindow, toggleWindow, tray, updateActiveApp, win;
+  var BrowserWindow, Menu, Tray, activateApp, activeApp, app, buffers, clipboard, createWindow, electron, getActiveApp, ipc, listenClipboard, log, proc, showWindow, toggleWindow, tray, updateActiveApp, win;
 
   electron = require('electron');
 
@@ -21,14 +21,7 @@
 
   tray = void 0;
 
-  buffers = (function() {
-    var i, results;
-    results = [];
-    for (a = i = 0; i < 22; a = ++i) {
-      results.push(String(a));
-    }
-    return results;
-  })();
+  buffers = [];
 
   activeApp = "";
 
@@ -43,29 +36,16 @@
   };
 
   updateActiveApp = function() {
-    return activeApp = getActiveApp();
-  };
-
-  activateApp = function() {
-    return proc.execSync("osascript -e \"tell application \\\"" + activeApp + "\\\" to activate\"");
-  };
-
-  toggleWindow = function() {
-    if (win != null ? win.isVisible() : void 0) {
-      win.hide();
-      return app.dock.hide();
-    } else {
-      return showWindow();
+    var appName;
+    appName = getActiveApp();
+    if (appName !== app.getName() && appName !== "Electron") {
+      return activeApp = appName;
     }
   };
 
-  showWindow = function() {
-    updateActiveApp();
-    if (win != null) {
-      win.show();
-      return app.dock.show();
-    } else {
-      return createWindow();
+  activateApp = function() {
+    if (activeApp.length) {
+      return proc.execSync("osascript -e \"tell application \\\"" + activeApp + "\\\" to activate\"");
     }
   };
 
@@ -91,16 +71,35 @@
     return function(event, arg) {
       var paste;
       clipboard.writeText(buffers[arg]);
+      buffers.splice(arg, 1);
       win.close();
       paste = function() {
         return proc.exec("osascript -e \"tell application \\\"System Events\\\" to keystroke \\\"v\\\" using command down\"");
       };
-      return setTimeout(paste, 100);
+      return setTimeout(paste, 10);
     };
   })(this));
 
+  toggleWindow = function() {
+    if (win != null ? win.isVisible() : void 0) {
+      win.hide();
+      return app.dock.hide();
+    } else {
+      return showWindow();
+    }
+  };
+
+  showWindow = function() {
+    updateActiveApp();
+    if (win != null) {
+      win.show();
+      return app.dock.show();
+    } else {
+      return createWindow();
+    }
+  };
+
   createWindow = function() {
-    log('create');
     win = new BrowserWindow({
       width: 1000,
       height: 1200,
@@ -113,19 +112,17 @@
     });
     win.loadURL("file://" + __dirname + "/../index.html");
     app.dock.show();
+    win.on('closed', function() {
+      return win = null;
+    });
     win.on('close', function(event) {
       activateApp();
       win.hide();
       app.dock.hide();
       return event.preventDefault();
     });
-    win.on('closed', function() {
-      return win = null;
-    });
     return win;
   };
-
-  updateActiveApp();
 
   app.on('ready', function() {
     tray = new Tray(__dirname + "/../img/menu.png");

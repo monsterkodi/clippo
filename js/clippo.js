@@ -63,6 +63,9 @@
       html = ("<pre id=" + i + " onClick='window.onClick(" + i + ");'>") + encl.join("<br>") + "</pre>\n" + html;
       i += 1;
     }
+    if (html.length === 0) {
+      html = "clipboard is empty!";
+    }
     document.body.innerHTML = html;
     return highlight(buffers.length - 1);
   };
@@ -70,8 +73,6 @@
   ipc.on("reload", loadBuffers);
 
   loadBuffers();
-
-  highlight(0);
 
   document.onkeydown = function(event) {
     var key;

@@ -37,13 +37,13 @@ loadBuffers = ->
         encl = ( encode(l) for l in buf.split("\n")  )
         html = "<pre id=#{i} onClick='window.onClick(#{i});'>" + encl.join("<br>") + "</pre>\n" + html
         i += 1
+    html = "clipboard is empty!" if html.length == 0
     document.body.innerHTML = html
     highlight buffers.length-1
 
 ipc.on "reload", loadBuffers
 
 loadBuffers()
-highlight 0
 
 document.onkeydown = (event) ->
     key = keyname.ofEvent event
