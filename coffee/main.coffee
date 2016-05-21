@@ -6,6 +6,7 @@
 
 electron      = require 'electron'
 proc          = require 'child_process'
+osascript     = require './tools/osascript'
 app           = electron.app
 BrowserWindow = electron.BrowserWindow
 Tray          = electron.Tray
@@ -14,7 +15,7 @@ clipboard     = electron.clipboard
 ipc           = electron.ipcMain
 win           = undefined
 tray          = undefined
-buffers       = [] # ( String(a) for a in [0...22] )
+buffers       = []
 activeApp     = ""
 originApp     = null
 debug         = false
@@ -28,7 +29,13 @@ log = () -> console.log ([].slice.call arguments, 0).join " "
 #000   000   0000000     000     000      0      00000000
 
 getActiveApp = () ->
-    appName = proc.execSync "osascript -e \"tell application \\\"System Events\\\"\" -e \"set n to name of first application process whose frontmost is true\" -e \"end tell\" -e \"do shell script \\\"echo \\\" & n\""
+    script = osascript """
+    tell application "System Events"
+        set n to name of first application process whose frontmost is true
+    end tell
+    do shell script "echo " & n
+    """
+    appName = proc.execSync "osascript #{script}"
     appName = String(appName).trim()    
 
 updateActiveApp = () -> 
@@ -38,7 +45,9 @@ updateActiveApp = () ->
 
 activateApp = () ->
     if activeApp.length
-        proc.execSync "osascript -e \"tell application \\\"#{activeApp}\\\" to activate\""
+        proc.execSync "osascript " + osascript """
+        tell application "#{activeApp}" to activate
+        """
 
 # 0000000   00000000   00000000   000   0000000   0000000   000   000
 #000   000  000   000  000   000  000  000       000   000  0000  000
@@ -78,7 +87,9 @@ ipc.on 'paste', (event, arg) =>
     originApp = buffers.splice(arg, 1)[0].app
     win.close()
     paste = () ->
-        proc.exec "osascript -e \"tell application \\\"System Events\\\" to keystroke \\\"v\\\" using command down\""
+        proc.exec "osascript " + osascript """
+        tell application "System Events" to keystroke "v" using command down
+        """
     setTimeout paste, 10
 
 #000   000  000  000   000  0000000     0000000   000   000

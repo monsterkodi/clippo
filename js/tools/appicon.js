@@ -1,5 +1,5 @@
 (function() {
-  var absPath, appFolder, args, conPath, convertIcns, fs, i, len, noon, parseInfo, path, proc, ref, reportDone, resolve, searchIcon;
+  var absPath, appFolder, args, conPath, convertIcns, fs, i, len, noon, osas, parseInfo, path, proc, ref, reportDone, resolve, searchIcon;
 
   fs = require('fs');
 
@@ -8,6 +8,8 @@
   noon = require('noon');
 
   proc = require('child_process');
+
+  osas = require('./osascript');
 
   args = require('karg')("icon\n    app     . ? name of the application . *\n    outdir  . ? output folder           . = .\n    size    . ? icon size               . = 128");
 
@@ -34,24 +36,14 @@
     };
     convertIcns = function(icns) {
       return function(err) {
-        var l, pngPath, script, scriptArg;
+        var pngPath, script;
         if (err != null) {
           log(err);
           return;
         }
         pngPath = resolve(args.outdir + "/" + path.basename(args.app, path.extname(args.app)) + ".png");
-        script = "tell application \"Image Events\"\n    set f to (POSIX file \"" + icns + "\")\n    set img to open f\n    tell img\n        scale to size \"" + args.size + "\"\n        save as PNG in \"" + pngPath + "\"\n    end tell\nend tell";
-        scriptArg = ((function() {
-          var j, len1, ref1, results;
-          ref1 = script.split("\n");
-          results = [];
-          for (j = 0, len1 = ref1.length; j < len1; j++) {
-            l = ref1[j];
-            results.push("-e \"" + (l.replace(/\"/g, "\\\"")) + "\"");
-          }
-          return results;
-        })()).join(" ");
-        return proc.exec("osascript " + scriptArg, reportDone(pngPath));
+        script = osas("tell application \"Image Events\"\n    set f to (POSIX file \"" + icns + "\")\n    set img to open f\n    tell img\n        scale to size \"" + args.size + "\"\n        save as PNG in \"" + pngPath + "\"\n    end tell\nend tell");
+        return proc.exec("osascript " + script, reportDone(pngPath));
       };
     };
     parseInfo = function(inf) {

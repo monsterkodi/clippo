@@ -1,9 +1,11 @@
 (function() {
-  var BrowserWindow, Menu, Tray, activateApp, activeApp, app, buffers, clipboard, createWindow, debug, electron, getActiveApp, ipc, listenClipboard, log, originApp, proc, saveAppIcon, showWindow, toggleWindow, tray, updateActiveApp, win;
+  var BrowserWindow, Menu, Tray, activateApp, activeApp, app, buffers, clipboard, createWindow, debug, electron, getActiveApp, ipc, listenClipboard, log, originApp, osascript, proc, saveAppIcon, showWindow, toggleWindow, tray, updateActiveApp, win;
 
   electron = require('electron');
 
   proc = require('child_process');
+
+  osascript = require('./tools/osascript');
 
   app = electron.app;
 
@@ -34,8 +36,9 @@
   };
 
   getActiveApp = function() {
-    var appName;
-    appName = proc.execSync("osascript -e \"tell application \\\"System Events\\\"\" -e \"set n to name of first application process whose frontmost is true\" -e \"end tell\" -e \"do shell script \\\"echo \\\" & n\"");
+    var appName, script;
+    script = osascript("tell application \"System Events\"\n    set n to name of first application process whose frontmost is true\nend tell\ndo shell script \"echo \" & n");
+    appName = proc.execSync("osascript " + script);
     return appName = String(appName).trim();
   };
 
@@ -49,7 +52,7 @@
 
   activateApp = function() {
     if (activeApp.length) {
-      return proc.execSync("osascript -e \"tell application \\\"" + activeApp + "\\\" to activate\"");
+      return proc.execSync("osascript " + osascript("tell application \"" + activeApp + "\" to activate"));
     }
   };
 
@@ -87,7 +90,7 @@
       originApp = buffers.splice(arg, 1)[0].app;
       win.close();
       paste = function() {
-        return proc.exec("osascript -e \"tell application \\\"System Events\\\" to keystroke \\\"v\\\" using command down\"");
+        return proc.exec("osascript " + osascript("tell application \"System Events\" to keystroke \"v\" using command down"));
       };
       return setTimeout(paste, 10);
     };

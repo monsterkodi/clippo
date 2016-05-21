@@ -8,7 +8,7 @@ fs   = require 'fs'
 path = require 'path'
 noon = require 'noon'
 proc = require 'child_process'
-
+osas = require './osascript'
 args = require('karg') """
 icon
     app     . ? name of the application . *
@@ -33,7 +33,7 @@ for appFolder in ["/Applications", "/Applications/Utilities", "/System/Library/C
             log err
             return
         pngPath = resolve args.outdir + "/" + path.basename(args.app, path.extname(args.app)) + ".png"
-        script = """
+        script = osas """
         tell application "Image Events"
             set f to (POSIX file "#{icns}")
             set img to open f
@@ -43,8 +43,7 @@ for appFolder in ["/Applications", "/Applications/Utilities", "/System/Library/C
             end tell
         end tell
         """
-        scriptArg = ( "-e \"#{l.replace(/\"/g, "\\\"")}\"" for l in script.split("\n") ).join(" ")
-        proc.exec "osascript " + scriptArg, reportDone(pngPath)
+        proc.exec "osascript " + script, reportDone pngPath
         
     parseInfo = (inf) -> (err) ->
         return if err?
