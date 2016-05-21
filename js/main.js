@@ -1,5 +1,5 @@
 (function() {
-  var BrowserWindow, Menu, Tray, activateApp, activeApp, app, appIconSync, buffers, clipboard, createWindow, debug, electron, fs, getActiveApp, iconDir, ipc, listenClipboard, log, originApp, osascript, proc, resolve, saveAppIcon, showWindow, toggleWindow, tray, updateActiveApp, win;
+  var BrowserWindow, Menu, Tray, activateApp, activeApp, app, appIconSync, buffers, clipboard, createWindow, debug, electron, fs, getActiveApp, iconDir, ipc, listenClipboard, log, originApp, osascript, prefs, proc, resolve, saveAppIcon, saveBounds, saveBuffer, showWindow, toggleWindow, tray, updateActiveApp, win;
 
   electron = require('electron');
 
@@ -10,6 +10,8 @@
   resolve = require('./tools/resolve');
 
   appIconSync = require('./tools/appiconsync');
+
+  prefs = require('./tools/prefs');
 
   fs = require('fs');
 
@@ -78,6 +80,9 @@
   listenClipboard = function() {
     var text;
     text = clipboard.readText();
+    if (buffers.length === 0) {
+      originApp = 'clippo';
+    }
     if ((buffers.length === 0) || (text !== buffers[buffers.length - 1].text)) {
       buffers.push({
         text: text,
@@ -131,6 +136,7 @@
   };
 
   createWindow = function() {
+    var bounds;
     win = new BrowserWindow({
       width: 1000,
       height: 1200,
@@ -141,6 +147,10 @@
       fullscreen: false,
       show: true
     });
+    bounds = prefs.get('bounds');
+    if (bounds != null) {
+      win.setBounds(bounds);
+    }
     win.loadURL("file://" + __dirname + "/../index.html");
     if (debug) {
       win.webContents.openDevTools();
@@ -158,6 +168,16 @@
     return win;
   };
 
+  saveBounds = function() {
+    if (win != null) {
+      return prefs.set('bounds', win.getBounds());
+    }
+  };
+
+  saveBuffer = function() {
+    return prefs.set('buffers', buffers.slice(-prefs.get('maxBuffers', 20)));
+  };
+
   app.on('ready', function() {
     var error, error1;
     tray = new Tray(__dirname + "/../img/menu.png");
@@ -165,7 +185,6 @@
     if (app.dock) {
       app.dock.hide();
     }
-    electron.globalShortcut.register('Command+Alt+V', showWindow);
     Menu.setApplicationMenu(Menu.buildFromTemplate([
       {
         label: app.getName(),
@@ -180,12 +199,20 @@
             label: 'Quit',
             accelerator: 'Command+Q',
             click: function() {
+              saveBounds();
+              saveBuffer();
               return app.exit(0);
             }
           }
         ]
       }
     ]));
+    prefs.init((app.getPath('userData')) + "/clippo.json", {
+      maxBuffers: 20,
+      shortcut: 'Command+Alt+V'
+    });
+    electron.globalShortcut.register(prefs.get('shortcut'), showWindow);
+    buffers = prefs.get('buffers', []);
     iconDir = resolve(__dirname + "/../icons");
     try {
       fs.accessSync(iconDir, fs.R_OK);

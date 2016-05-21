@@ -9,6 +9,7 @@ proc          = require 'child_process'
 osascript     = require './tools/osascript'
 resolve       = require './tools/resolve'
 appIconSync   = require './tools/appiconsync'
+prefs         = require './tools/prefs'
 fs            = require 'fs'
 app           = electron.app
 BrowserWindow = electron.BrowserWindow
@@ -75,6 +76,7 @@ saveAppIcon = (appName) ->
 
 listenClipboard = () ->
     text = clipboard.readText()
+    originApp = 'clippo' if buffers.length == 0
     if (buffers.length == 0) or (text != buffers[buffers.length-1].text)
         buffers.push text: text, app: originApp ? getActiveApp()
         saveAppIcon buffers[buffers.length-1].app
@@ -131,6 +133,10 @@ createWindow = ->
         minimizable:     false
         fullscreen:      false
         show:            true
+        
+    bounds = prefs.get 'bounds'
+    win.setBounds bounds if bounds?
+        
     win.loadURL "file://#{__dirname}/../index.html"
     win.webContents.openDevTools() if debug
     app.dock.show()
@@ -141,6 +147,13 @@ createWindow = ->
         app.dock.hide()
         event.preventDefault()
     win
+
+saveBounds = () ->
+    if win?
+        prefs.set 'bounds', win.getBounds()
+        
+saveBuffer = () ->
+    prefs.set 'buffers', buffers.slice(- prefs.get('maxBuffers', 20))
 
 #00000000   00000000   0000000   0000000    000   000
 #000   000  000       000   000  000   000   000 000 
@@ -153,7 +166,6 @@ app.on 'ready', ->
     tray = new Tray "#{__dirname}/../img/menu.png"
     tray.on 'click', toggleWindow
     app.dock.hide() if app.dock
-    electron.globalShortcut.register 'Command+Alt+V', showWindow
     
     Menu.setApplicationMenu Menu.buildFromTemplate [
         label: app.getName()
@@ -164,10 +176,21 @@ app.on 'ready', ->
         ,
             label: 'Quit'
             accelerator: 'Command+Q'
-            click: () -> app.exit 0
+            click: () -> 
+                saveBounds()
+                saveBuffer()
+                app.exit 0
         ]
     ]
-    
+        
+    prefs.init "#{app.getPath('userData')}/clippo.json",
+        maxBuffers: 20
+        shortcut: 'Command+Alt+V'
+
+    electron.globalShortcut.register prefs.get('shortcut'), showWindow
+        
+    buffers = prefs.get 'buffers', []
+
     iconDir = resolve "#{__dirname}/../icons"    
     try
         fs.accessSync iconDir, fs.R_OK
