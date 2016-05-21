@@ -66,7 +66,9 @@ saveAppIcon = (appName) ->
     try 
         fs.accessSync iconPath, fs.R_OK
     catch
-        icn = appIconSync appName, iconDir, 64
+        png = appIconSync appName, iconDir, 64
+        appName = "clippo" if not png
+    appName
         
 #000      000   0000000  000000000  00000000  000   000
 #000      000  000          000     000       0000  000
@@ -75,29 +77,33 @@ saveAppIcon = (appName) ->
 #0000000  000  0000000      000     00000000  000   000
 
 listenClipboard = ->
-    text = clipboard.readText()
-    image = clipboard.readImage()
-    if not text.length and image.isEmpty()
-        setTimeout listenClipboard, 500
-        return
-    isEmpty = buffers.length == 0
-    if not isEmpty
-        otherText = text != buffers[buffers.length-1].text
-        otherImage = not image.isEmpty() and image.toPng().toString('base64') != buffers[buffers.length-1].image        
-    if isEmpty or otherText or otherImage
-        originApp = 'clippo' if not originApp and not getActiveApp()
-        info = 
-            text: text
-            app:  originApp ? getActiveApp()
-        if not image.isEmpty()
-            s = image.getSize()
-            log "image of size #{s.width}x#{s.height}"
-            info.image = image.toPng().toString('base64')
-        # log info.app
-        buffers.push info
-        saveAppIcon buffers[buffers.length-1].app
-        originApp = undefined
-        win?.webContents.send 'load'
+    formats = clipboard.availableFormats()
+    # log 'listen', formats
+    text = clipboard.readText() if 'text/plain' in formats
+    image = clipboard.readImage() if 'image/png' in formats
+    imageSize = (image.getSize().width * image.getSize().height) if image?
+    if text? or image?
+        isEmpty = buffers.length == 0
+        if not isEmpty
+            otherText = text != buffers[buffers.length-1].text
+            if image?
+                if imageSize > 1000000
+                    otherImage = imageSize != buffers[buffers.length-1].imageSize
+                else
+                    otherImage = image? and image.toPng().toString('base64') != buffers[buffers.length-1].image        
+        if isEmpty or otherText or otherImage
+            activeApp = getActiveApp()
+            activeApp = 'clippo' if activeApp == 'Electron'
+            originApp = 'clippo' if (not originApp) and (not activeApp)
+            info = 
+                app: saveAppIcon originApp ? activeApp
+            if text? then info.text = text
+            if image? then info.image = image.toPng().toString('base64')
+            info.imageSize = imageSize if imageSize > 1000000
+            buffers.push info
+            originApp = undefined
+            # log 'load', formats, info.image?.length
+            win?.webContents.send 'load'
     setTimeout listenClipboard, 500
 
 ipc.on 'get-buffers', (event, arg) => event.returnValue = buffers
@@ -110,7 +116,8 @@ ipc.on 'get-buffers', (event, arg) => event.returnValue = buffers
 
 copyIndex = (index) ->
     return if (index < 0) or (index > buffers.length-1)
-    clipboard.writeText buffers[index].text
+    # log "copy #{index}"
+    clipboard.writeText buffers[index].text if buffers[index].text
     if buffers[index].image
         image = nativeImage.createFromBuffer new Buffer buffers[index].image, 'base64'
         clipboard.writeImage image
@@ -143,7 +150,7 @@ ipc.on 'del', (event, arg) =>
         clipboard.clear()
         copyIndex buffers.length-2
     buffers.splice(arg, 1)
-    win?.webContents.send 'load'
+    win?.webContents.send 'load', arg-1
     
 #000   000  000  000   000  0000000     0000000   000   000
 #000 0 000  000  0000  000  000   000  000   000  000 0 000

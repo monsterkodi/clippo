@@ -1,5 +1,6 @@
 (function() {
-  var BrowserWindow, Menu, Tray, activateApp, activeApp, app, appIconSync, buffers, clipboard, copyIndex, createWindow, debug, electron, fs, getActiveApp, iconDir, ipc, listenClipboard, log, nativeImage, originApp, osascript, prefs, proc, readBuffer, resolve, saveAppIcon, saveBounds, saveBuffer, showWindow, toggleWindow, tray, updateActiveApp, win;
+  var BrowserWindow, Menu, Tray, activateApp, activeApp, app, appIconSync, buffers, clipboard, copyIndex, createWindow, debug, electron, fs, getActiveApp, iconDir, ipc, listenClipboard, log, nativeImage, originApp, osascript, prefs, proc, readBuffer, resolve, saveAppIcon, saveBounds, saveBuffer, showWindow, toggleWindow, tray, updateActiveApp, win,
+    indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
   electron = require('electron');
 
@@ -69,46 +70,68 @@
   };
 
   saveAppIcon = function(appName) {
-    var error, icn, iconPath;
+    var error, iconPath, png;
     iconPath = iconDir + "/" + appName + ".png";
     try {
-      return fs.accessSync(iconPath, fs.R_OK);
+      fs.accessSync(iconPath, fs.R_OK);
     } catch (error) {
-      return icn = appIconSync(appName, iconDir, 64);
+      png = appIconSync(appName, iconDir, 64);
+      if (!png) {
+        appName = "clippo";
+      }
     }
+    return appName;
   };
 
   listenClipboard = function() {
-    var image, info, isEmpty, otherImage, otherText, s, text;
-    text = clipboard.readText();
-    image = clipboard.readImage();
-    if (!text.length && image.isEmpty()) {
-      setTimeout(listenClipboard, 500);
-      return;
+    var formats, image, imageSize, info, isEmpty, otherImage, otherText, text;
+    formats = clipboard.availableFormats();
+    if (indexOf.call(formats, 'text/plain') >= 0) {
+      text = clipboard.readText();
     }
-    isEmpty = buffers.length === 0;
-    if (!isEmpty) {
-      otherText = text !== buffers[buffers.length - 1].text;
-      otherImage = !image.isEmpty() && image.toPng().toString('base64') !== buffers[buffers.length - 1].image;
+    if (indexOf.call(formats, 'image/png') >= 0) {
+      image = clipboard.readImage();
     }
-    if (isEmpty || otherText || otherImage) {
-      if (!originApp && !getActiveApp()) {
-        originApp = 'clippo';
+    if (image != null) {
+      imageSize = image.getSize().width * image.getSize().height;
+    }
+    if ((text != null) || (image != null)) {
+      isEmpty = buffers.length === 0;
+      if (!isEmpty) {
+        otherText = text !== buffers[buffers.length - 1].text;
+        if (image != null) {
+          if (imageSize > 1000000) {
+            otherImage = imageSize !== buffers[buffers.length - 1].imageSize;
+          } else {
+            otherImage = (image != null) && image.toPng().toString('base64') !== buffers[buffers.length - 1].image;
+          }
+        }
       }
-      info = {
-        text: text,
-        app: originApp != null ? originApp : getActiveApp()
-      };
-      if (!image.isEmpty()) {
-        s = image.getSize();
-        log("image of size " + s.width + "x" + s.height);
-        info.image = image.toPng().toString('base64');
-      }
-      buffers.push(info);
-      saveAppIcon(buffers[buffers.length - 1].app);
-      originApp = void 0;
-      if (win != null) {
-        win.webContents.send('load');
+      if (isEmpty || otherText || otherImage) {
+        activeApp = getActiveApp();
+        if (activeApp === 'Electron') {
+          activeApp = 'clippo';
+        }
+        if ((!originApp) && (!activeApp)) {
+          originApp = 'clippo';
+        }
+        info = {
+          app: saveAppIcon(originApp != null ? originApp : activeApp)
+        };
+        if (text != null) {
+          info.text = text;
+        }
+        if (image != null) {
+          info.image = image.toPng().toString('base64');
+        }
+        if (imageSize > 1000000) {
+          info.imageSize = imageSize;
+        }
+        buffers.push(info);
+        originApp = void 0;
+        if (win != null) {
+          win.webContents.send('load');
+        }
       }
     }
     return setTimeout(listenClipboard, 500);
@@ -125,7 +148,9 @@
     if ((index < 0) || (index > buffers.length - 1)) {
       return;
     }
-    clipboard.writeText(buffers[index].text);
+    if (buffers[index].text) {
+      clipboard.writeText(buffers[index].text);
+    }
     if (buffers[index].image) {
       image = nativeImage.createFromBuffer(new Buffer(buffers[index].image, 'base64'));
       return clipboard.writeImage(image);
@@ -152,7 +177,7 @@
         copyIndex(buffers.length - 2);
       }
       buffers.splice(arg, 1);
-      return win != null ? win.webContents.send('load') : void 0;
+      return win != null ? win.webContents.send('load', arg - 1) : void 0;
     };
   })(this));
 

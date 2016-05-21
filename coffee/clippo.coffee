@@ -17,38 +17,42 @@ log = -> console.log ([].slice.call arguments, 0).join " "
 
 doPaste = -> ipc.send 'paste', current
 
-highlight = (index) ->
+highlight = (index) =>
     $(current)?.className = ""
     current = Math.max 0, Math.min index, buffers.length-1
     pre = $(current)
     pre.className = 'current'
     pre.scrollIntoViewIfNeeded()
-
+    
+window.highlight = highlight
 window.onClick = (index) ->
     highlight index
     doPaste()
 
-loadBuffers = ->
+loadBuffers = (index) ->
     buffers = ipc.sendSync "get-buffers"
     html = ""
     i = 0
     for buf in buffers
-        encl = ( encode(l) for l in buf.text.split("\n")  )
-        icon = "<img  class=\"appicon\" src=\"icons/#{buf.app}.png\"/>\n"
+        
+        icon = "<img  onClick='window.highlight(#{i});' class=\"appicon\" src=\"icons/#{buf.app}.png\"/>\n"
         id = "id=#{i} onClick='window.onClick(#{i});'"
         if buf.image?
             pre  = "<img #{id} src=\"data:image/png;base64,#{buf.image}\"/>\n"
-        else
+        else if buf.text?
+            encl = ( encode(l) for l in buf.text.split("\n")  )
             pre  = "<pre #{id}>" + encl.join("<br>") + "</pre>\n"
+        else
+            pre = ""
         span = "<span class=\"line-span\">" + icon + pre + "</span>"
         div  = "<div  class=\"line-div\">#{span}</div>"
         html = div + html
         i += 1
     html = "<center><p class=\"info\">clipboard is empty</p></center>" if html.length == 0
     $("scroll").innerHTML = html
-    highlight buffers.length-1
+    highlight index ? buffers.length-1
 
-ipc.on "load", loadBuffers
+ipc.on "load", (event, arg) -> loadBuffers arg
 
 loadBuffers()
 
