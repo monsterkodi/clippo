@@ -44,7 +44,7 @@
   };
 
   loadBuffers = function() {
-    var buf, encl, html, i, j, l, len;
+    var buf, div, encl, html, i, icon, j, l, len, pre, span;
     buffers = ipc.sendSync("get-buffers");
     html = "";
     i = 0;
@@ -52,7 +52,7 @@
       buf = buffers[j];
       encl = (function() {
         var k, len1, ref, results;
-        ref = buf.split("\n");
+        ref = buf.text.split("\n");
         results = [];
         for (k = 0, len1 = ref.length; k < len1; k++) {
           l = ref[k];
@@ -60,13 +60,17 @@
         }
         return results;
       })();
-      html = ("<pre id=" + i + " onClick='window.onClick(" + i + ");'>") + encl.join("<br>") + "</pre>\n" + html;
+      icon = "<img  class=\"appicon\" src=\"icons/" + buf.app + ".png\"/>\n";
+      pre = ("<pre  id=" + i + " onClick='window.onClick(" + i + ");'>") + encl.join("<br>") + "</pre>\n";
+      span = "<span class=\"line-span\">" + icon + pre + "</span>";
+      div = "<div  class=\"line-div\">" + span + "</div>";
+      html = div + html;
       i += 1;
     }
     if (html.length === 0) {
       html = "clipboard is empty!";
     }
-    document.body.innerHTML = html;
+    $("scroll").innerHTML = html;
     return highlight(buffers.length - 1);
   };
 

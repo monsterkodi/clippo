@@ -1,3 +1,8 @@
+# 0000000   00000000   00000000   000   0000000   0000000   000   000
+#000   000  000   000  000   000  000  000       000   000  0000  000
+#000000000  00000000   00000000   000  000       000   000  000 0 000
+#000   000  000        000        000  000       000   000  000  0000
+#000   000  000        000        000   0000000   0000000   000   000
 
 fs   = require 'fs'
 path = require 'path'
@@ -6,8 +11,9 @@ proc = require 'child_process'
 
 args = require('karg') """
 icon
-    app         . ? the name of the application . *
-    outdir      . ? the output folder           . = .    
+    app     . ? name of the application . *
+    outdir  . ? output folder           . = .
+    size    . ? icon size               . = 128
 """
 
 args.app += ".app" if not args.app.endsWith '.app'
@@ -27,7 +33,18 @@ for appFolder in ["/Applications", "/Applications/Utilities", "/System/Library/C
             log err
             return
         pngPath = resolve args.outdir + "/" + path.basename(args.app, path.extname(args.app)) + ".png"
-        proc.exec "osascript -e \"tell application \\\"Image Events\\\"\" -e \"set f to (POSIX file \\\"#{icns}\\\")\" -e \"set img to open f\" -e \"tell img\" -e \"scale to size \\\"128\\\"\" -e \"save as PNG in \\\"#{pngPath}\\\"\" -e \"end tell\"  -e \"end tell\"", reportDone(pngPath)
+        script = """
+        tell application "Image Events"
+            set f to (POSIX file "#{icns}")
+            set img to open f
+            tell img
+                scale to size "#{args.size}"
+                save as PNG in "#{pngPath}"
+            end tell
+        end tell
+        """
+        scriptArg = ( "-e \"#{l.replace(/\"/g, "\\\"")}\"" for l in script.split("\n") ).join(" ")
+        proc.exec "osascript " + scriptArg, reportDone(pngPath)
         
     parseInfo = (inf) -> (err) ->
         return if err?

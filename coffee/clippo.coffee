@@ -25,7 +25,6 @@ highlight = (index) ->
     pre.scrollIntoViewIfNeeded()
 
 window.onClick = (index) ->
-    # log 'clicked', index
     highlight index
     doPaste()
 
@@ -34,11 +33,15 @@ loadBuffers = ->
     html = ""
     i = 0
     for buf in buffers
-        encl = ( encode(l) for l in buf.split("\n")  )
-        html = "<pre id=#{i} onClick='window.onClick(#{i});'>" + encl.join("<br>") + "</pre>\n" + html
+        encl = ( encode(l) for l in buf.text.split("\n")  )
+        icon = "<img  class=\"appicon\" src=\"icons/#{buf.app}.png\"/>\n"
+        pre  = "<pre  id=#{i} onClick='window.onClick(#{i});'>" + encl.join("<br>") + "</pre>\n"
+        span = "<span class=\"line-span\">" + icon + pre + "</span>"
+        div  = "<div  class=\"line-div\">#{span}</div>"
+        html = div + html
         i += 1
     html = "clipboard is empty!" if html.length == 0
-    document.body.innerHTML = html
+    $("scroll").innerHTML = html
     highlight buffers.length-1
 
 ipc.on "reload", loadBuffers

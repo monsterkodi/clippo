@@ -15,9 +15,9 @@ ipc           = electron.ipcMain
 win           = undefined
 tray          = undefined
 buffers       = [] # ( String(a) for a in [0...22] )
-applist       = []
 activeApp     = ""
 originApp     = null
+debug         = false
 
 log = () -> console.log ([].slice.call arguments, 0).join " "
 
@@ -39,6 +39,16 @@ updateActiveApp = () ->
 activateApp = () ->
     if activeApp.length
         proc.execSync "osascript -e \"tell application \\\"#{activeApp}\\\" to activate\""
+
+# 0000000   00000000   00000000   000   0000000   0000000   000   000
+#000   000  000   000  000   000  000  000       000   000  0000  000
+#000000000  00000000   00000000   000  000       000   000  000 0 000
+#000   000  000        000        000  000       000   000  000  0000
+#000   000  000        000        000   0000000   0000000   000   000
+        
+saveAppIcon = (appName) ->
+    # log "appName " + appName
+    proc.exec "node js/tools/appicon.js \"#{appName}\" -o icons -s 64", ->
         
 #000      000   0000000  000000000  00000000  000   000
 #000      000  000          000     000       0000  000
@@ -48,11 +58,10 @@ activateApp = () ->
 
 listenClipboard = () ->
     text = clipboard.readText()
-    if text != buffers[buffers.length-1]
-        applist.push originApp ? getActiveApp()
+    if (buffers.length == 0) or (text != buffers[buffers.length-1].text)
+        buffers.push text: text, app: originApp ? getActiveApp()
+        saveAppIcon buffers[buffers.length-1].app
         originApp = undefined
-        log applist
-        buffers.push text
         win?.webContents.send 'reload'
     setTimeout listenClipboard, 500
 
@@ -65,9 +74,8 @@ ipc.on 'get-buffers', (event, arg) => event.returnValue = buffers
 #000        000   000  0000000      000     00000000
 
 ipc.on 'paste', (event, arg) => 
-    clipboard.writeText buffers[arg]
-    buffers.splice arg, 1
-    originApp = applist.splice(arg, 1)[0]
+    clipboard.writeText buffers[arg].text
+    originApp = buffers.splice(arg, 1)[0].app
     win.close()
     paste = () ->
         proc.exec "osascript -e \"tell application \\\"System Events\\\" to keystroke \\\"v\\\" using command down\""
@@ -95,7 +103,6 @@ showWindow = () ->
         createWindow()
     
 createWindow = ->
-    # log 'create'
     win = new BrowserWindow
         width:           1000
         height:          1200
@@ -106,11 +113,10 @@ createWindow = ->
         fullscreen:      false
         show:            true
     win.loadURL "file://#{__dirname}/../index.html"
-    # win.webContents.openDevTools()
+    win.webContents.openDevTools() if debug
     app.dock.show()
     win.on 'closed', -> win = null
     win.on 'close', (event) ->
-        # log 'close'
         activateApp()
         win.hide()
         app.dock.hide()

@@ -1,5 +1,5 @@
 (function() {
-  var BrowserWindow, Menu, Tray, activateApp, activeApp, app, applist, buffers, clipboard, createWindow, electron, getActiveApp, ipc, listenClipboard, log, originApp, proc, showWindow, toggleWindow, tray, updateActiveApp, win;
+  var BrowserWindow, Menu, Tray, activateApp, activeApp, app, buffers, clipboard, createWindow, debug, electron, getActiveApp, ipc, listenClipboard, log, originApp, proc, saveAppIcon, showWindow, toggleWindow, tray, updateActiveApp, win;
 
   electron = require('electron');
 
@@ -23,11 +23,11 @@
 
   buffers = [];
 
-  applist = [];
-
   activeApp = "";
 
   originApp = null;
+
+  debug = false;
 
   log = function() {
     return console.log(([].slice.call(arguments, 0)).join(" "));
@@ -53,14 +53,20 @@
     }
   };
 
+  saveAppIcon = function(appName) {
+    return proc.exec("node js/tools/appicon.js \"" + appName + "\" -o icons -s 64", function() {});
+  };
+
   listenClipboard = function() {
     var text;
     text = clipboard.readText();
-    if (text !== buffers[buffers.length - 1]) {
-      applist.push(originApp != null ? originApp : getActiveApp());
+    if ((buffers.length === 0) || (text !== buffers[buffers.length - 1].text)) {
+      buffers.push({
+        text: text,
+        app: originApp != null ? originApp : getActiveApp()
+      });
+      saveAppIcon(buffers[buffers.length - 1].app);
       originApp = void 0;
-      log(applist);
-      buffers.push(text);
       if (win != null) {
         win.webContents.send('reload');
       }
@@ -77,9 +83,8 @@
   ipc.on('paste', (function(_this) {
     return function(event, arg) {
       var paste;
-      clipboard.writeText(buffers[arg]);
-      buffers.splice(arg, 1);
-      originApp = applist.splice(arg, 1)[0];
+      clipboard.writeText(buffers[arg].text);
+      originApp = buffers.splice(arg, 1)[0].app;
       win.close();
       paste = function() {
         return proc.exec("osascript -e \"tell application \\\"System Events\\\" to keystroke \\\"v\\\" using command down\"");
@@ -119,6 +124,9 @@
       show: true
     });
     win.loadURL("file://" + __dirname + "/../index.html");
+    if (debug) {
+      win.webContents.openDevTools();
+    }
     app.dock.show();
     win.on('closed', function() {
       return win = null;

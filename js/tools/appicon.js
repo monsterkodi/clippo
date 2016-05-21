@@ -9,7 +9,7 @@
 
   proc = require('child_process');
 
-  args = require('karg')("icon\n    app         . ? the name of the application . *\n    outdir      . ? the output folder           . = .    ");
+  args = require('karg')("icon\n    app     . ? name of the application . *\n    outdir  . ? output folder           . = .\n    size    . ? icon size               . = 128");
 
   if (!args.app.endsWith('.app')) {
     args.app += ".app";
@@ -34,13 +34,24 @@
     };
     convertIcns = function(icns) {
       return function(err) {
-        var pngPath;
+        var l, pngPath, script, scriptArg;
         if (err != null) {
           log(err);
           return;
         }
         pngPath = resolve(args.outdir + "/" + path.basename(args.app, path.extname(args.app)) + ".png");
-        return proc.exec("osascript -e \"tell application \\\"Image Events\\\"\" -e \"set f to (POSIX file \\\"" + icns + "\\\")\" -e \"set img to open f\" -e \"tell img\" -e \"scale to size \\\"128\\\"\" -e \"save as PNG in \\\"" + pngPath + "\\\"\" -e \"end tell\"  -e \"end tell\"", reportDone(pngPath));
+        script = "tell application \"Image Events\"\n    set f to (POSIX file \"" + icns + "\")\n    set img to open f\n    tell img\n        scale to size \"" + args.size + "\"\n        save as PNG in \"" + pngPath + "\"\n    end tell\nend tell";
+        scriptArg = ((function() {
+          var j, len1, ref1, results;
+          ref1 = script.split("\n");
+          results = [];
+          for (j = 0, len1 = ref1.length; j < len1; j++) {
+            l = ref1[j];
+            results.push("-e \"" + (l.replace(/\"/g, "\\\"")) + "\"");
+          }
+          return results;
+        })()).join(" ");
+        return proc.exec("osascript " + scriptArg, reportDone(pngPath));
       };
     };
     parseInfo = function(inf) {
