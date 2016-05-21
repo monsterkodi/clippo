@@ -26,7 +26,7 @@ activeApp     = ""
 originApp     = null
 debug         = false
 
-log = () -> console.log ([].slice.call arguments, 0).join " "
+log = -> console.log ([].slice.call arguments, 0).join " "
 
 # 0000000    0000000  000000000  000  000   000  00000000
 #000   000  000          000     000  000   000  000     
@@ -34,7 +34,7 @@ log = () -> console.log ([].slice.call arguments, 0).join " "
 #000   000  000          000     000     000     000     
 #000   000   0000000     000     000      0      00000000
 
-getActiveApp = () ->
+getActiveApp = ->
     script = osascript """
     tell application "System Events"
         set n to name of first application process whose frontmost is true
@@ -44,12 +44,12 @@ getActiveApp = () ->
     appName = proc.execSync "osascript #{script}"
     appName = String(appName).trim()    
 
-updateActiveApp = () -> 
+updateActiveApp = -> 
     appName = getActiveApp()
     if appName != app.getName() and appName != "Electron"
         activeApp = appName
 
-activateApp = () ->
+activateApp = ->
     if activeApp.length
         proc.execSync "osascript " + osascript """
         tell application "#{activeApp}" to activate
@@ -67,7 +67,6 @@ saveAppIcon = (appName) ->
         fs.accessSync iconPath, fs.R_OK
     catch
         icn = appIconSync appName, iconDir, 64
-        log 'gotAppIcon', appName, iconDir, icn
         
 #000      000   0000000  000000000  00000000  000   000
 #000      000  000          000     000       0000  000
@@ -75,15 +74,18 @@ saveAppIcon = (appName) ->
 #000      000       000     000     000       000  0000
 #0000000  000  0000000      000     00000000  000   000
 
-listenClipboard = () ->
+listenClipboard = ->
     text = clipboard.readText()
     image = clipboard.readImage()
-    originApp = 'clippo' if buffers.length == 0
+    if not text.length and image.isEmpty()
+        setTimeout listenClipboard, 500
+        return
     isEmpty = buffers.length == 0
     if not isEmpty
         otherText = text != buffers[buffers.length-1].text
-        otherImage = not image.isEmpty() and image.toPng().toString('base64') != buffers[buffers.length-1].image
+        otherImage = not image.isEmpty() and image.toPng().toString('base64') != buffers[buffers.length-1].image        
     if isEmpty or otherText or otherImage
+        originApp = 'clippo' if not originApp and not getActiveApp()
         info = 
             text: text
             app:  originApp ? getActiveApp()
@@ -91,15 +93,28 @@ listenClipboard = () ->
             s = image.getSize()
             log "image of size #{s.width}x#{s.height}"
             info.image = image.toPng().toString('base64')
-        log info.app
-        
+        # log info.app
         buffers.push info
         saveAppIcon buffers[buffers.length-1].app
         originApp = undefined
-        win?.webContents.send 'reload'
+        win?.webContents.send 'load'
     setTimeout listenClipboard, 500
 
 ipc.on 'get-buffers', (event, arg) => event.returnValue = buffers
+
+# 0000000   0000000   00000000   000   000
+#000       000   000  000   000   000 000 
+#000       000   000  00000000     00000  
+#000       000   000  000           000   
+# 0000000   0000000   000           000   
+
+copyIndex = (index) ->
+    return if (index < 0) or (index > buffers.length-1)
+    clipboard.writeText buffers[index].text
+    if buffers[index].image
+        image = nativeImage.createFromBuffer new Buffer buffers[index].image, 'base64'
+        clipboard.writeImage image
+
 
 #00000000    0000000    0000000  000000000  00000000
 #000   000  000   000  000          000     000     
@@ -108,10 +123,7 @@ ipc.on 'get-buffers', (event, arg) => event.returnValue = buffers
 #000        000   000  0000000      000     00000000
 
 ipc.on 'paste', (event, arg) => 
-    clipboard.writeText buffers[arg].text
-    if buffers[arg].image
-        image = nativeImage.createFromBuffer new Buffer buffers[arg].image, 'base64'
-        clipboard.writeImage image
+    copyIndex arg
     originApp = buffers.splice(arg, 1)[0].app
     win.close()
     paste = () ->
@@ -119,21 +131,34 @@ ipc.on 'paste', (event, arg) =>
         tell application "System Events" to keystroke "v" using command down
         """
     setTimeout paste, 10
+    
+#0000000    00000000  000    
+#000   000  000       000    
+#000   000  0000000   000    
+#000   000  000       000    
+#0000000    00000000  0000000
 
+ipc.on 'del', (event, arg) =>
+    if arg == buffers.length-1
+        clipboard.clear()
+        copyIndex buffers.length-2
+    buffers.splice(arg, 1)
+    win?.webContents.send 'load'
+    
 #000   000  000  000   000  0000000     0000000   000   000
 #000 0 000  000  0000  000  000   000  000   000  000 0 000
 #000000000  000  000 0 000  000   000  000   000  000000000
 #000   000  000  000  0000  000   000  000   000  000   000
 #00     00  000  000   000  0000000     0000000   00     00
 
-toggleWindow = () ->
+toggleWindow = ->
     if win?.isVisible()
         win.hide()    
         app.dock.hide()        
     else
         showWindow()
 
-showWindow = () ->
+showWindow = ->
     updateActiveApp()
     if win?
         win.show()
@@ -166,15 +191,15 @@ createWindow = ->
         event.preventDefault()
     win
 
-saveBounds = () ->
+saveBounds = ->
     if win?
         prefs.set 'bounds', win.getBounds()
         
-saveBuffer = () ->
+saveBuffer = ->
     json = JSON.stringify buffers.slice(- prefs.get('maxBuffers', 20)), null, '    '
     fs.writeFile "#{app.getPath('userData')}/clippo-buffers.json", json, encoding:'utf8' 
     
-readBuffer = () ->
+readBuffer = ->
     buffers = [] 
     try
         buffers = JSON.parse fs.readFileSync "#{app.getPath('userData')}/clippo-buffers.json", encoding:'utf8'
@@ -196,13 +221,17 @@ app.on 'ready', ->
     Menu.setApplicationMenu Menu.buildFromTemplate [
         label: app.getName()
         submenu: [
+            label: 'Save Buffers'
+            accelerator: 'Command+S'
+            click: -> saveBuffer()
+        ,
             label: 'Close Window'
             accelerator: 'Command+W'
-            click: () -> win.close()
+            click: -> win.close()
         ,
             label: 'Quit'
             accelerator: 'Command+Q'
-            click: () -> 
+            click: -> 
                 saveBounds()
                 saveBuffer()
                 app.exit 0

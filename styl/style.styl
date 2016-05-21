@@ -18,6 +18,7 @@
 body
     background      #222
     color           #fff
+    font-family     arial, helvetica, sans-serif
         
 #scroll
     padding-top     24px
@@ -55,15 +56,18 @@ pre
         background  #000
         border      1px solid #aaa
         
-.line-span img
+.line-span img:not(.appicon)
     margin          0
     margin-left     7px
     margin-top      2px
     cursor          pointer
     border-radius   6px
+    border          1px solid transparent
     &:hover
-        border      1px solid #666
+        border      1px solid #000
     &.current
         border      1px solid #aaa
             
-            
+.info            
+    color           #888
+    margin-top      10px

@@ -73,13 +73,13 @@
       i += 1;
     }
     if (html.length === 0) {
-      html = "clipboard is empty!";
+      html = "<center><p class=\"info\">clipboard is empty</p></center>";
     }
     $("scroll").innerHTML = html;
     return highlight(buffers.length - 1);
   };
 
-  ipc.on("reload", loadBuffers);
+  ipc.on("load", loadBuffers);
 
   loadBuffers();
 
@@ -103,6 +103,9 @@
         return highlight(0);
       case 'enter':
         return doPaste();
+      case 'backspace':
+      case 'command+backspace':
+        return ipc.send("del", current);
     }
     return log(key);
   };

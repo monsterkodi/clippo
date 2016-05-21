@@ -1,5 +1,5 @@
 (function() {
-  var BrowserWindow, Menu, Tray, activateApp, activeApp, app, appIconSync, buffers, clipboard, createWindow, debug, electron, fs, getActiveApp, iconDir, ipc, listenClipboard, log, nativeImage, originApp, osascript, prefs, proc, readBuffer, resolve, saveAppIcon, saveBounds, saveBuffer, showWindow, toggleWindow, tray, updateActiveApp, win;
+  var BrowserWindow, Menu, Tray, activateApp, activeApp, app, appIconSync, buffers, clipboard, copyIndex, createWindow, debug, electron, fs, getActiveApp, iconDir, ipc, listenClipboard, log, nativeImage, originApp, osascript, prefs, proc, readBuffer, resolve, saveAppIcon, saveBounds, saveBuffer, showWindow, toggleWindow, tray, updateActiveApp, win;
 
   electron = require('electron');
 
@@ -74,8 +74,7 @@
     try {
       return fs.accessSync(iconPath, fs.R_OK);
     } catch (error) {
-      icn = appIconSync(appName, iconDir, 64);
-      return log('gotAppIcon', appName, iconDir, icn);
+      return icn = appIconSync(appName, iconDir, 64);
     }
   };
 
@@ -83,8 +82,9 @@
     var image, info, isEmpty, otherImage, otherText, s, text;
     text = clipboard.readText();
     image = clipboard.readImage();
-    if (buffers.length === 0) {
-      originApp = 'clippo';
+    if (!text.length && image.isEmpty()) {
+      setTimeout(listenClipboard, 500);
+      return;
     }
     isEmpty = buffers.length === 0;
     if (!isEmpty) {
@@ -92,6 +92,9 @@
       otherImage = !image.isEmpty() && image.toPng().toString('base64') !== buffers[buffers.length - 1].image;
     }
     if (isEmpty || otherText || otherImage) {
+      if (!originApp && !getActiveApp()) {
+        originApp = 'clippo';
+      }
       info = {
         text: text,
         app: originApp != null ? originApp : getActiveApp()
@@ -101,12 +104,11 @@
         log("image of size " + s.width + "x" + s.height);
         info.image = image.toPng().toString('base64');
       }
-      log(info.app);
       buffers.push(info);
       saveAppIcon(buffers[buffers.length - 1].app);
       originApp = void 0;
       if (win != null) {
-        win.webContents.send('reload');
+        win.webContents.send('load');
       }
     }
     return setTimeout(listenClipboard, 500);
@@ -118,20 +120,39 @@
     };
   })(this));
 
+  copyIndex = function(index) {
+    var image;
+    if ((index < 0) || (index > buffers.length - 1)) {
+      return;
+    }
+    clipboard.writeText(buffers[index].text);
+    if (buffers[index].image) {
+      image = nativeImage.createFromBuffer(new Buffer(buffers[index].image, 'base64'));
+      return clipboard.writeImage(image);
+    }
+  };
+
   ipc.on('paste', (function(_this) {
     return function(event, arg) {
-      var image, paste;
-      clipboard.writeText(buffers[arg].text);
-      if (buffers[arg].image) {
-        image = nativeImage.createFromBuffer(new Buffer(buffers[arg].image, 'base64'));
-        clipboard.writeImage(image);
-      }
+      var paste;
+      copyIndex(arg);
       originApp = buffers.splice(arg, 1)[0].app;
       win.close();
       paste = function() {
         return proc.exec("osascript " + osascript("tell application \"System Events\" to keystroke \"v\" using command down"));
       };
       return setTimeout(paste, 10);
+    };
+  })(this));
+
+  ipc.on('del', (function(_this) {
+    return function(event, arg) {
+      if (arg === buffers.length - 1) {
+        clipboard.clear();
+        copyIndex(buffers.length - 2);
+      }
+      buffers.splice(arg, 1);
+      return win != null ? win.webContents.send('load') : void 0;
     };
   })(this));
 
@@ -225,6 +246,12 @@
         label: app.getName(),
         submenu: [
           {
+            label: 'Save Buffers',
+            accelerator: 'Command+S',
+            click: function() {
+              return saveBuffer();
+            }
+          }, {
             label: 'Close Window',
             accelerator: 'Command+W',
             click: function() {

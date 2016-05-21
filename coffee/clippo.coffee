@@ -44,11 +44,11 @@ loadBuffers = ->
         div  = "<div  class=\"line-div\">#{span}</div>"
         html = div + html
         i += 1
-    html = "clipboard is empty!" if html.length == 0
+    html = "<center><p class=\"info\">clipboard is empty</p></center>" if html.length == 0
     $("scroll").innerHTML = html
     highlight buffers.length-1
 
-ipc.on "reload", loadBuffers
+ipc.on "load", loadBuffers
 
 loadBuffers()
 
@@ -61,6 +61,7 @@ document.onkeydown = (event) ->
         when 'home', 'page up'  then return highlight buffers.length-1
         when 'end', 'page down' then return highlight 0
         when 'enter'            then return doPaste()
+        when 'backspace', 'command+backspace' then return ipc.send "del", current
     log key
 
 
