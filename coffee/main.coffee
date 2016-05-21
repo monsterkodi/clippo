@@ -8,6 +8,7 @@ electron      = require 'electron'
 proc          = require 'child_process'
 osascript     = require './tools/osascript'
 resolve       = require './tools/resolve'
+appIconSync   = require './tools/appiconsync'
 fs            = require 'fs'
 app           = electron.app
 BrowserWindow = electron.BrowserWindow
@@ -18,6 +19,7 @@ ipc           = electron.ipcMain
 win           = undefined
 tray          = undefined
 buffers       = []
+iconDir       = ""
 activeApp     = ""
 originApp     = null
 debug         = false
@@ -58,11 +60,12 @@ activateApp = () ->
 #000   000  000        000        000   0000000   0000000   000   000
         
 saveAppIcon = (appName) ->
-    iconPath = resolve "./icons/#{appName}.png"
+    iconPath = "#{iconDir}/#{appName}.png"
     try 
         fs.accessSync iconPath, fs.R_OK
     catch
-        proc.execSync "node js/tools/appicon.js \"#{appName}\" -o icons -s 64", ->
+        icn = appIconSync appName, iconDir, 64
+        log 'gotAppIcon', appName, iconDir, icn
         
 #000      000   0000000  000000000  00000000  000   000
 #000      000  000          000     000       0000  000
@@ -164,6 +167,15 @@ app.on 'ready', ->
             click: () -> app.exit 0
         ]
     ]
+    
+    iconDir = resolve "#{__dirname}/../icons"    
+    try
+        fs.accessSync iconDir, fs.R_OK
+    catch
+        try
+            fs.mkdirSync iconDir
+        catch
+            log "can't create icon directory #{iconDir}"
     
     listenClipboard()
     

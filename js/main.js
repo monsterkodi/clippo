@@ -1,5 +1,5 @@
 (function() {
-  var BrowserWindow, Menu, Tray, activateApp, activeApp, app, buffers, clipboard, createWindow, debug, electron, fs, getActiveApp, ipc, listenClipboard, log, originApp, osascript, proc, resolve, saveAppIcon, showWindow, toggleWindow, tray, updateActiveApp, win;
+  var BrowserWindow, Menu, Tray, activateApp, activeApp, app, appIconSync, buffers, clipboard, createWindow, debug, electron, fs, getActiveApp, iconDir, ipc, listenClipboard, log, originApp, osascript, proc, resolve, saveAppIcon, showWindow, toggleWindow, tray, updateActiveApp, win;
 
   electron = require('electron');
 
@@ -8,6 +8,8 @@
   osascript = require('./tools/osascript');
 
   resolve = require('./tools/resolve');
+
+  appIconSync = require('./tools/appiconsync');
 
   fs = require('fs');
 
@@ -28,6 +30,8 @@
   tray = void 0;
 
   buffers = [];
+
+  iconDir = "";
 
   activeApp = "";
 
@@ -61,12 +65,13 @@
   };
 
   saveAppIcon = function(appName) {
-    var error, iconPath;
-    iconPath = resolve("./icons/" + appName + ".png");
+    var error, icn, iconPath;
+    iconPath = iconDir + "/" + appName + ".png";
     try {
       return fs.accessSync(iconPath, fs.R_OK);
     } catch (error) {
-      return proc.execSync("node js/tools/appicon.js \"" + appName + "\" -o icons -s 64", function() {});
+      icn = appIconSync(appName, iconDir, 64);
+      return log('gotAppIcon', appName, iconDir, icn);
     }
   };
 
@@ -154,6 +159,7 @@
   };
 
   app.on('ready', function() {
+    var error, error1;
     tray = new Tray(__dirname + "/../img/menu.png");
     tray.on('click', toggleWindow);
     if (app.dock) {
@@ -180,6 +186,16 @@
         ]
       }
     ]));
+    iconDir = resolve(__dirname + "/../icons");
+    try {
+      fs.accessSync(iconDir, fs.R_OK);
+    } catch (error) {
+      try {
+        fs.mkdirSync(iconDir);
+      } catch (error1) {
+        log("can't create icon directory " + iconDir);
+      }
+    }
     return listenClipboard();
   });
 
