@@ -91,7 +91,6 @@ listenClipboard = ->
                 if imageSize > 1000000
                     otherImage = imageSize != buffers[buffers.length-1].imageSize
                 else
-                    log 'image size', imageSize
                     otherImage = image? and image.toPng().toString('base64') != buffers[buffers.length-1].image        
         if isEmpty or otherText or otherImage
             currentApp = getActiveApp()
