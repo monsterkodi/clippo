@@ -1,5 +1,5 @@
 (function() {
-  var BrowserWindow, Menu, Tray, activateApp, activeApp, app, buffers, clipboard, createWindow, electron, getActiveApp, ipc, listenClipboard, log, proc, showWindow, toggleWindow, tray, updateActiveApp, win;
+  var BrowserWindow, Menu, Tray, activateApp, activeApp, app, applist, buffers, clipboard, createWindow, electron, getActiveApp, ipc, listenClipboard, log, originApp, proc, showWindow, toggleWindow, tray, updateActiveApp, win;
 
   electron = require('electron');
 
@@ -23,7 +23,11 @@
 
   buffers = [];
 
+  applist = [];
+
   activeApp = "";
+
+  originApp = null;
 
   log = function() {
     return console.log(([].slice.call(arguments, 0)).join(" "));
@@ -53,6 +57,9 @@
     var text;
     text = clipboard.readText();
     if (text !== buffers[buffers.length - 1]) {
+      applist.push(originApp != null ? originApp : getActiveApp());
+      originApp = void 0;
+      log(applist);
       buffers.push(text);
       if (win != null) {
         win.webContents.send('reload');
@@ -72,6 +79,7 @@
       var paste;
       clipboard.writeText(buffers[arg]);
       buffers.splice(arg, 1);
+      originApp = applist.splice(arg, 1)[0];
       win.close();
       paste = function() {
         return proc.exec("osascript -e \"tell application \\\"System Events\\\" to keystroke \\\"v\\\" using command down\"");

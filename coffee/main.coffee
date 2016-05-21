@@ -15,7 +15,9 @@ ipc           = electron.ipcMain
 win           = undefined
 tray          = undefined
 buffers       = [] # ( String(a) for a in [0...22] )
+applist       = []
 activeApp     = ""
+originApp     = null
 
 log = () -> console.log ([].slice.call arguments, 0).join " "
 
@@ -35,8 +37,6 @@ updateActiveApp = () ->
         activeApp = appName
 
 activateApp = () ->
-    # http://apple.stackexchange.com/questions/36943/how-do-i-automate-a-key-press-in-applescript
-    # proc.execSync "osascript -e \"tell application \\\"System Events\\\" to key code 48 using command down\""
     if activeApp.length
         proc.execSync "osascript -e \"tell application \\\"#{activeApp}\\\" to activate\""
         
@@ -49,7 +49,9 @@ activateApp = () ->
 listenClipboard = () ->
     text = clipboard.readText()
     if text != buffers[buffers.length-1]
-        # log "copyApp #{getActiveApp()}"
+        applist.push originApp ? getActiveApp()
+        originApp = undefined
+        log applist
         buffers.push text
         win?.webContents.send 'reload'
     setTimeout listenClipboard, 500
@@ -65,6 +67,7 @@ ipc.on 'get-buffers', (event, arg) => event.returnValue = buffers
 ipc.on 'paste', (event, arg) => 
     clipboard.writeText buffers[arg]
     buffers.splice arg, 1
+    originApp = applist.splice(arg, 1)[0]
     win.close()
     paste = () ->
         proc.exec "osascript -e \"tell application \\\"System Events\\\" to keystroke \\\"v\\\" using command down\""
