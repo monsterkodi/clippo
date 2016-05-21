@@ -43,6 +43,7 @@
           pngPath = resolve(outDir + "/" + path.basename(appName, path.extname(appName)) + ".png");
           script = osas("tell application \"Image Events\"\n    set f to (POSIX file \"" + icnsPath + "\")\n    set img to open f\n    tell img\n        scale to size \"" + size + "\"\n        save as PNG in \"" + pngPath + "\"\n    end tell\nend tell");
           proc.execSync("osascript " + script);
+          fs.accessSync(pngPath, fs.R_OK);
           return pngPath;
         }
       } catch (error) {

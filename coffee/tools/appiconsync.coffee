@@ -44,6 +44,7 @@ module.exports = (appName, outDir=".", size=128) ->
                 end tell
                 """
                 proc.execSync "osascript " + script
+                fs.accessSync pngPath, fs.R_OK
                 return pngPath
         catch err
             continue

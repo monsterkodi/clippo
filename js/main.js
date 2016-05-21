@@ -84,7 +84,7 @@
   };
 
   listenClipboard = function() {
-    var formats, image, imageSize, info, isEmpty, otherImage, otherText, text;
+    var currentApp, formats, image, imageSize, info, isEmpty, otherImage, otherText, text;
     formats = clipboard.availableFormats();
     if (indexOf.call(formats, 'text/plain') >= 0) {
       text = clipboard.readText();
@@ -95,6 +95,9 @@
     if (image != null) {
       imageSize = image.getSize().width * image.getSize().height;
     }
+    if (imageSize === 0) {
+      image = null;
+    }
     if ((text != null) || (image != null)) {
       isEmpty = buffers.length === 0;
       if (!isEmpty) {
@@ -103,20 +106,21 @@
           if (imageSize > 1000000) {
             otherImage = imageSize !== buffers[buffers.length - 1].imageSize;
           } else {
+            log('image size', imageSize);
             otherImage = (image != null) && image.toPng().toString('base64') !== buffers[buffers.length - 1].image;
           }
         }
       }
       if (isEmpty || otherText || otherImage) {
-        activeApp = getActiveApp();
-        if (activeApp === 'Electron') {
-          activeApp = 'clippo';
+        currentApp = getActiveApp();
+        if (currentApp === 'Electron') {
+          currentApp = 'clippo';
         }
-        if ((!originApp) && (!activeApp)) {
+        if ((!originApp) && (!currentApp)) {
           originApp = 'clippo';
         }
         info = {
-          app: saveAppIcon(originApp != null ? originApp : activeApp)
+          app: saveAppIcon(originApp != null ? originApp : currentApp)
         };
         if (text != null) {
           info.text = text;

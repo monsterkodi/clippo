@@ -82,6 +82,7 @@ listenClipboard = ->
     text = clipboard.readText() if 'text/plain' in formats
     image = clipboard.readImage() if 'image/png' in formats
     imageSize = (image.getSize().width * image.getSize().height) if image?
+    image = null if imageSize == 0
     if text? or image?
         isEmpty = buffers.length == 0
         if not isEmpty
@@ -90,13 +91,14 @@ listenClipboard = ->
                 if imageSize > 1000000
                     otherImage = imageSize != buffers[buffers.length-1].imageSize
                 else
+                    log 'image size', imageSize
                     otherImage = image? and image.toPng().toString('base64') != buffers[buffers.length-1].image        
         if isEmpty or otherText or otherImage
-            activeApp = getActiveApp()
-            activeApp = 'clippo' if activeApp == 'Electron'
-            originApp = 'clippo' if (not originApp) and (not activeApp)
+            currentApp = getActiveApp()
+            currentApp = 'clippo' if currentApp == 'Electron'
+            originApp  = 'clippo' if (not originApp) and (not currentApp)
             info = 
-                app: saveAppIcon originApp ? activeApp
+                app: saveAppIcon originApp ? currentApp
             if text? then info.text = text
             if image? then info.image = image.toPng().toString('base64')
             info.imageSize = imageSize if imageSize > 1000000
