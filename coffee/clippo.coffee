@@ -35,7 +35,11 @@ loadBuffers = ->
     for buf in buffers
         encl = ( encode(l) for l in buf.text.split("\n")  )
         icon = "<img  class=\"appicon\" src=\"icons/#{buf.app}.png\"/>\n"
-        pre  = "<pre  id=#{i} onClick='window.onClick(#{i});'>" + encl.join("<br>") + "</pre>\n"
+        id = "id=#{i} onClick='window.onClick(#{i});'"
+        if buf.image?
+            pre  = "<img #{id} src=\"data:image/png;base64,#{buf.image}\"/>\n"
+        else
+            pre  = "<pre #{id}>" + encl.join("<br>") + "</pre>\n"
         span = "<span class=\"line-span\">" + icon + pre + "</span>"
         div  = "<div  class=\"line-div\">#{span}</div>"
         html = div + html

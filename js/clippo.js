@@ -44,7 +44,7 @@
   };
 
   loadBuffers = function() {
-    var buf, div, encl, html, i, icon, j, l, len, pre, span;
+    var buf, div, encl, html, i, icon, id, j, l, len, pre, span;
     buffers = ipc.sendSync("get-buffers");
     html = "";
     i = 0;
@@ -61,7 +61,12 @@
         return results;
       })();
       icon = "<img  class=\"appicon\" src=\"icons/" + buf.app + ".png\"/>\n";
-      pre = ("<pre  id=" + i + " onClick='window.onClick(" + i + ");'>") + encl.join("<br>") + "</pre>\n";
+      id = "id=" + i + " onClick='window.onClick(" + i + ");'";
+      if (buf.image != null) {
+        pre = "<img " + id + " src=\"data:image/png;base64," + buf.image + "\"/>\n";
+      } else {
+        pre = ("<pre " + id + ">") + encl.join("<br>") + "</pre>\n";
+      }
       span = "<span class=\"line-span\">" + icon + pre + "</span>";
       div = "<div  class=\"line-div\">" + span + "</div>";
       html = div + html;

@@ -54,3 +54,16 @@ pre.current {
   background: #000;
   border: 1px solid #aaa;
 }
+.line-span img {
+  margin: 0;
+  margin-left: 7px;
+  margin-top: 2px;
+  cursor: pointer;
+  border-radius: 6px;
+}
+.line-span img:hover {
+  border: 1px solid #666;
+}
+.line-span img.current {
+  border: 1px solid #aaa;
+}

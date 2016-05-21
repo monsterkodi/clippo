@@ -1,5 +1,5 @@
 (function() {
-  var BrowserWindow, Menu, Tray, activateApp, activeApp, app, appIconSync, buffers, clipboard, createWindow, debug, electron, fs, getActiveApp, iconDir, ipc, listenClipboard, log, originApp, osascript, prefs, proc, resolve, saveAppIcon, saveBounds, saveBuffer, showWindow, toggleWindow, tray, updateActiveApp, win;
+  var BrowserWindow, Menu, Tray, activateApp, activeApp, app, appIconSync, buffers, clipboard, createWindow, debug, electron, fs, getActiveApp, iconDir, ipc, listenClipboard, log, nativeImage, originApp, osascript, prefs, proc, resolve, saveAppIcon, saveBounds, saveBuffer, showWindow, toggleWindow, tray, updateActiveApp, win;
 
   electron = require('electron');
 
@@ -26,6 +26,8 @@
   clipboard = electron.clipboard;
 
   ipc = electron.ipcMain;
+
+  nativeImage = electron.nativeImage;
 
   win = void 0;
 
@@ -78,16 +80,29 @@
   };
 
   listenClipboard = function() {
-    var text;
+    var image, info, isEmpty, otherImage, otherText, s, text;
     text = clipboard.readText();
+    image = clipboard.readImage();
     if (buffers.length === 0) {
       originApp = 'clippo';
     }
-    if ((buffers.length === 0) || (text !== buffers[buffers.length - 1].text)) {
-      buffers.push({
+    isEmpty = buffers.length === 0;
+    if (!isEmpty) {
+      otherText = text !== buffers[buffers.length - 1].text;
+      otherImage = !image.isEmpty() && image.toPng().toString('base64') !== buffers[buffers.length - 1].image;
+    }
+    if (isEmpty || otherText || otherImage) {
+      info = {
         text: text,
         app: originApp != null ? originApp : getActiveApp()
-      });
+      };
+      if (!image.isEmpty()) {
+        s = image.getSize();
+        log("image of size " + s.width + "x" + s.height);
+        info.image = image.toPng().toString('base64');
+      }
+      log(info.app);
+      buffers.push(info);
       saveAppIcon(buffers[buffers.length - 1].app);
       originApp = void 0;
       if (win != null) {
@@ -105,8 +120,12 @@
 
   ipc.on('paste', (function(_this) {
     return function(event, arg) {
-      var paste;
+      var image, paste;
       clipboard.writeText(buffers[arg].text);
+      if (buffers[arg].image) {
+        image = nativeImage.createFromBuffer(new Buffer(buffers[arg].image, 'base64'));
+        clipboard.writeImage(image);
+      }
       originApp = buffers.splice(arg, 1)[0].app;
       win.close();
       paste = function() {
@@ -212,6 +231,9 @@
       shortcut: 'Command+Alt+V'
     });
     electron.globalShortcut.register(prefs.get('shortcut'), showWindow);
+    electron.globalShortcut.register('Command+Alt+I', function() {
+      return win != null ? win.webContents.openDevTools() : void 0;
+    });
     buffers = prefs.get('buffers', []);
     iconDir = resolve(__dirname + "/../icons");
     try {

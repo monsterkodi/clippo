@@ -17,6 +17,7 @@ Tray          = electron.Tray
 Menu          = electron.Menu
 clipboard     = electron.clipboard
 ipc           = electron.ipcMain
+nativeImage   = electron.nativeImage
 win           = undefined
 tray          = undefined
 buffers       = []
@@ -76,9 +77,23 @@ saveAppIcon = (appName) ->
 
 listenClipboard = () ->
     text = clipboard.readText()
+    image = clipboard.readImage()
     originApp = 'clippo' if buffers.length == 0
-    if (buffers.length == 0) or (text != buffers[buffers.length-1].text)
-        buffers.push text: text, app: originApp ? getActiveApp()
+    isEmpty = buffers.length == 0
+    if not isEmpty
+        otherText = text != buffers[buffers.length-1].text
+        otherImage = not image.isEmpty() and image.toPng().toString('base64') != buffers[buffers.length-1].image
+    if isEmpty or otherText or otherImage
+        info = 
+            text: text
+            app:  originApp ? getActiveApp()
+        if not image.isEmpty()
+            s = image.getSize()
+            log "image of size #{s.width}x#{s.height}"
+            info.image = image.toPng().toString('base64')
+        log info.app
+        
+        buffers.push info
         saveAppIcon buffers[buffers.length-1].app
         originApp = undefined
         win?.webContents.send 'reload'
@@ -94,6 +109,9 @@ ipc.on 'get-buffers', (event, arg) => event.returnValue = buffers
 
 ipc.on 'paste', (event, arg) => 
     clipboard.writeText buffers[arg].text
+    if buffers[arg].image
+        image = nativeImage.createFromBuffer new Buffer buffers[arg].image, 'base64'
+        clipboard.writeImage image
     originApp = buffers.splice(arg, 1)[0].app
     win.close()
     paste = () ->
@@ -188,7 +206,8 @@ app.on 'ready', ->
         shortcut: 'Command+Alt+V'
 
     electron.globalShortcut.register prefs.get('shortcut'), showWindow
-        
+    electron.globalShortcut.register 'Command+Alt+I', () -> win?.webContents.openDevTools()
+
     buffers = prefs.get 'buffers', []
 
     iconDir = resolve "#{__dirname}/../icons"    
@@ -201,9 +220,4 @@ app.on 'ready', ->
             log "can't create icon directory #{iconDir}"
     
     listenClipboard()
-    
-    
-    
-    
-    
     
