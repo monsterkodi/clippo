@@ -1,5 +1,5 @@
 (function() {
-  var BrowserWindow, Menu, Tray, activateApp, activeApp, app, appIconSync, buffers, clipboard, createWindow, debug, electron, fs, getActiveApp, iconDir, ipc, listenClipboard, log, nativeImage, originApp, osascript, prefs, proc, resolve, saveAppIcon, saveBounds, saveBuffer, showWindow, toggleWindow, tray, updateActiveApp, win;
+  var BrowserWindow, Menu, Tray, activateApp, activeApp, app, appIconSync, buffers, clipboard, createWindow, debug, electron, fs, getActiveApp, iconDir, ipc, listenClipboard, log, nativeImage, originApp, osascript, prefs, proc, readBuffer, resolve, saveAppIcon, saveBounds, saveBuffer, showWindow, toggleWindow, tray, updateActiveApp, win;
 
   electron = require('electron');
 
@@ -194,7 +194,23 @@
   };
 
   saveBuffer = function() {
-    return prefs.set('buffers', buffers.slice(-prefs.get('maxBuffers', 20)));
+    var json;
+    json = JSON.stringify(buffers.slice(-prefs.get('maxBuffers', 20)), null, '    ');
+    return fs.writeFile((app.getPath('userData')) + "/clippo-buffers.json", json, {
+      encoding: 'utf8'
+    });
+  };
+
+  readBuffer = function() {
+    var error;
+    buffers = [];
+    try {
+      return buffers = JSON.parse(fs.readFileSync((app.getPath('userData')) + "/clippo-buffers.json", {
+        encoding: 'utf8'
+      }));
+    } catch (error) {
+
+    }
   };
 
   app.on('ready', function() {
@@ -234,7 +250,7 @@
     electron.globalShortcut.register('Command+Alt+I', function() {
       return win != null ? win.webContents.openDevTools() : void 0;
     });
-    buffers = prefs.get('buffers', []);
+    readBuffer();
     iconDir = resolve(__dirname + "/../icons");
     try {
       fs.accessSync(iconDir, fs.R_OK);

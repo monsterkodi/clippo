@@ -171,7 +171,15 @@ saveBounds = () ->
         prefs.set 'bounds', win.getBounds()
         
 saveBuffer = () ->
-    prefs.set 'buffers', buffers.slice(- prefs.get('maxBuffers', 20))
+    json = JSON.stringify buffers.slice(- prefs.get('maxBuffers', 20)), null, '    '
+    fs.writeFile "#{app.getPath('userData')}/clippo-buffers.json", json, encoding:'utf8' 
+    
+readBuffer = () ->
+    buffers = [] 
+    try
+        buffers = JSON.parse fs.readFileSync "#{app.getPath('userData')}/clippo-buffers.json", encoding:'utf8'
+    catch
+        return
 
 #00000000   00000000   0000000   0000000    000   000
 #000   000  000       000   000  000   000   000 000 
@@ -208,7 +216,7 @@ app.on 'ready', ->
     electron.globalShortcut.register prefs.get('shortcut'), showWindow
     electron.globalShortcut.register 'Command+Alt+I', () -> win?.webContents.openDevTools()
 
-    buffers = prefs.get 'buffers', []
+    readBuffer()
 
     iconDir = resolve "#{__dirname}/../icons"    
     try
