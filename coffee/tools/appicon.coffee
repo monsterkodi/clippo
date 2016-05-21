@@ -4,12 +4,13 @@
 #000   000  000        000        000  000       000   000  000  0000
 #000   000  000        000        000   0000000   0000000   000   000
 
-fs   = require 'fs'
-path = require 'path'
-noon = require 'noon'
-proc = require 'child_process'
-osas = require './osascript'
-args = require('karg') """
+fs      = require 'fs'
+path    = require 'path'
+noon    = require 'noon'
+proc    = require 'child_process'
+osas    = require './osascript'
+resolve = require './resolve'
+args    = require('karg') """
 icon
     app     . ? name of the application . *
     outdir  . ? output folder           . = .
@@ -17,8 +18,6 @@ icon
 """
 
 args.app += ".app" if not args.app.endsWith '.app'
-
-resolve = (p) -> path.normalize path.resolve p.replace /\~/, process.env.HOME
 
 for appFolder in ["/Applications", "/Applications/Utilities", "/System/Library/CoreServices", "~/Applications"]
     absPath = resolve appFolder + "/" + args.app

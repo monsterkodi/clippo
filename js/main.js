@@ -1,11 +1,15 @@
 (function() {
-  var BrowserWindow, Menu, Tray, activateApp, activeApp, app, buffers, clipboard, createWindow, debug, electron, getActiveApp, ipc, listenClipboard, log, originApp, osascript, proc, saveAppIcon, showWindow, toggleWindow, tray, updateActiveApp, win;
+  var BrowserWindow, Menu, Tray, activateApp, activeApp, app, buffers, clipboard, createWindow, debug, electron, fs, getActiveApp, ipc, listenClipboard, log, originApp, osascript, proc, resolve, saveAppIcon, showWindow, toggleWindow, tray, updateActiveApp, win;
 
   electron = require('electron');
 
   proc = require('child_process');
 
   osascript = require('./tools/osascript');
+
+  resolve = require('./tools/resolve');
+
+  fs = require('fs');
 
   app = electron.app;
 
@@ -57,7 +61,13 @@
   };
 
   saveAppIcon = function(appName) {
-    return proc.exec("node js/tools/appicon.js \"" + appName + "\" -o icons -s 64", function() {});
+    var error, iconPath;
+    iconPath = resolve("./icons/" + appName + ".png");
+    try {
+      return fs.accessSync(iconPath, fs.R_OK);
+    } catch (error) {
+      return proc.execSync("node js/tools/appicon.js \"" + appName + "\" -o icons -s 64", function() {});
+    }
   };
 
   listenClipboard = function() {

@@ -11,15 +11,13 @@
 
   osas = require('./osascript');
 
+  resolve = require('./resolve');
+
   args = require('karg')("icon\n    app     . ? name of the application . *\n    outdir  . ? output folder           . = .\n    size    . ? icon size               . = 128");
 
   if (!args.app.endsWith('.app')) {
     args.app += ".app";
   }
-
-  resolve = function(p) {
-    return path.normalize(path.resolve(p.replace(/\~/, process.env.HOME)));
-  };
 
   ref = ["/Applications", "/Applications/Utilities", "/System/Library/CoreServices", "~/Applications"];
   for (i = 0, len = ref.length; i < len; i++) {

@@ -7,6 +7,8 @@
 electron      = require 'electron'
 proc          = require 'child_process'
 osascript     = require './tools/osascript'
+resolve       = require './tools/resolve'
+fs            = require 'fs'
 app           = electron.app
 BrowserWindow = electron.BrowserWindow
 Tray          = electron.Tray
@@ -56,8 +58,11 @@ activateApp = () ->
 #000   000  000        000        000   0000000   0000000   000   000
         
 saveAppIcon = (appName) ->
-    # log "appName " + appName
-    proc.exec "node js/tools/appicon.js \"#{appName}\" -o icons -s 64", ->
+    iconPath = resolve "./icons/#{appName}.png"
+    try 
+        fs.accessSync iconPath, fs.R_OK
+    catch
+        proc.execSync "node js/tools/appicon.js \"#{appName}\" -o icons -s 64", ->
         
 #000      000   0000000  000000000  00000000  000   000
 #000      000  000          000     000       0000  000
