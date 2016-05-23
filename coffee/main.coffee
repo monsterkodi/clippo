@@ -51,9 +51,12 @@ updateActiveApp = ->
 
 activateApp = ->
     if activeApp.length
-        proc.execSync "osascript " + osascript """
-        tell application "#{activeApp}" to activate
-        """
+        try
+            proc.execSync "osascript " + osascript """
+            tell application "#{activeApp}" to activate
+            """
+        catch
+            return
 
 # 0000000   00000000   00000000   000   0000000   0000000   000   000
 #000   000  000   000  000   000  000  000       000   000  0000  000
@@ -118,11 +121,11 @@ ipc.on 'get-buffers', (event, arg) => event.returnValue = buffers
 copyIndex = (index) ->
     return if (index < 0) or (index > buffers.length-1)
     # log "copy #{index}"
-    clipboard.writeText buffers[index].text if buffers[index].text
+    clipboard.writeText buffers[index].text if buffers[index].text? and buffers[index].text.length > 0
     if buffers[index].image
         image = nativeImage.createFromBuffer new Buffer buffers[index].image, 'base64'
-        clipboard.writeImage image
-
+        if not image.isEmpty() and (image.getSize().width * image.getSize().height > 0)
+            clipboard.writeImage image
 
 #00000000    0000000    0000000  000000000  00000000
 #000   000  000   000  000          000     000     
@@ -204,7 +207,7 @@ saveBounds = ->
         prefs.set 'bounds', win.getBounds()
         
 saveBuffer = ->
-    json = JSON.stringify buffers.slice(- prefs.get('maxBuffers', 20)), null, '    '
+    json = JSON.stringify buffers.slice(- prefs.get('maxBuffers', 50)), null, '    '
     fs.writeFile "#{app.getPath('userData')}/clippo-buffers.json", json, encoding:'utf8' 
     
 readBuffer = ->
@@ -247,7 +250,7 @@ app.on 'ready', ->
     ]
         
     prefs.init "#{app.getPath('userData')}/clippo.json",
-        maxBuffers: 20
+        maxBuffers: 50
         shortcut: 'Command+Alt+V'
 
     electron.globalShortcut.register prefs.get('shortcut'), showWindow

@@ -1,5 +1,5 @@
 name          clippo
-version       1.0.1
+version       1.1.1
 description   Clipboard tool
 main          js/main.js
 repository
@@ -14,7 +14,7 @@ keywords
 author        monsterkodi
 license       Unlicense
 bugs
-              url   https://github.com/monsterkodi/clippo/issues
+              url  https://github.com/monsterkodi/clippo/issues
 dependencies
               html-entities   ^1.2.0
               keycode         ^2.1.1

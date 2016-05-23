@@ -110,9 +110,11 @@
       case 'page down':
         return highlight(0);
       case 'enter':
+      case 'command+v':
         return doPaste();
       case 'backspace':
       case 'command+backspace':
+      case 'delete':
         return ipc.send("del", current);
     }
     return log(key);

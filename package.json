@@ -1,6 +1,6 @@
 {
   "name": "clippo",
-  "version": "1.0.1",
+  "version": "1.1.1",
   "description": "Clipboard tool",
   "main": "js/main.js",
   "scripts": {
@@ -57,7 +57,7 @@
   },
   "devDependencies": {
     "electron-builder": "next",
-    "electron-prebuilt": "^1.0.1"
+    "electron-prebuilt": "^1.1.1"
   },
   "dependencies": {
     "html-entities": "^1.2.0",

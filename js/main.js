@@ -64,8 +64,13 @@
   };
 
   activateApp = function() {
+    var error;
     if (activeApp.length) {
-      return proc.execSync("osascript " + osascript("tell application \"" + activeApp + "\" to activate"));
+      try {
+        return proc.execSync("osascript " + osascript("tell application \"" + activeApp + "\" to activate"));
+      } catch (error) {
+
+      }
     }
   };
 
@@ -151,12 +156,14 @@
     if ((index < 0) || (index > buffers.length - 1)) {
       return;
     }
-    if (buffers[index].text) {
+    if ((buffers[index].text != null) && buffers[index].text.length > 0) {
       clipboard.writeText(buffers[index].text);
     }
     if (buffers[index].image) {
       image = nativeImage.createFromBuffer(new Buffer(buffers[index].image, 'base64'));
-      return clipboard.writeImage(image);
+      if (!image.isEmpty() && (image.getSize().width * image.getSize().height > 0)) {
+        return clipboard.writeImage(image);
+      }
     }
   };
 
@@ -244,7 +251,7 @@
 
   saveBuffer = function() {
     var json;
-    json = JSON.stringify(buffers.slice(-prefs.get('maxBuffers', 20)), null, '    ');
+    json = JSON.stringify(buffers.slice(-prefs.get('maxBuffers', 50)), null, '    ');
     return fs.writeFile((app.getPath('userData')) + "/clippo-buffers.json", json, {
       encoding: 'utf8'
     });
@@ -298,7 +305,7 @@
       }
     ]));
     prefs.init((app.getPath('userData')) + "/clippo.json", {
-      maxBuffers: 20,
+      maxBuffers: 50,
       shortcut: 'Command+Alt+V'
     });
     electron.globalShortcut.register(prefs.get('shortcut'), showWindow);
