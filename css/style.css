@@ -14,15 +14,22 @@
   background: #222;
 }
 body {
+  font-family: arial, helvetica, sans-serif;
   background: #222;
   color: #fff;
-  font-family: arial, helvetica, sans-serif;
+  margin: 0;
+  height: 100%;
+  width: 100%;
+  position: absolute;
+  -webkit-app-region: drag;
+  -webkit-user-select: none;
 }
 #scroll {
   padding-top: 24px;
   padding-left: 4px;
 }
 span.line-span {
+  -webkit-app-region: no-drag;
   white-space: nowrap;
   margin-top: 7px;
 }

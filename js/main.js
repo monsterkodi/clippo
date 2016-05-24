@@ -89,17 +89,10 @@
   };
 
   listenClipboard = function() {
-    var currentApp, formats, html, image, imageSize, info, isEmpty, otherImage, otherText, rtf, text;
+    var currentApp, done, formats, image, imageSize, isEmpty, text;
     formats = clipboard.availableFormats();
-    log('listen', formats);
     if (indexOf.call(formats, 'text/plain') >= 0) {
       text = clipboard.readText();
-    }
-    if (indexOf.call(formats, 'text/rtf') >= 0) {
-      rtf = clipboard.readRtf();
-    }
-    if (indexOf.call(formats, 'text/html') >= 0) {
-      html = clipboard.readHtml();
     }
     if (indexOf.call(formats, 'image/png') >= 0) {
       image = clipboard.readImage();
@@ -110,52 +103,57 @@
     if (imageSize === 0) {
       image = null;
     }
-    if ((text != null) || (image != null)) {
-      isEmpty = buffers.length === 0;
-      if (!isEmpty) {
-        otherText = text !== buffers[buffers.length - 1].text;
-        if (image != null) {
-          if (imageSize > 1000000) {
-            otherImage = imageSize !== buffers[buffers.length - 1].imageSize;
-          } else {
-            otherImage = (image != null) && image.toPng().toString('base64') !== buffers[buffers.length - 1].image;
+    isEmpty = buffers.length === 0;
+    done = function() {
+      return setTimeout(listenClipboard, 500);
+    };
+    if ((text == null) && (image == null)) {
+      return done();
+    }
+    if (buffers.length > 0) {
+      if ((text != null) && (buffers[buffers.length - 1].text != null)) {
+        if (text === buffers[buffers.length - 1].text) {
+          return done();
+        }
+      }
+      if ((image != null) && (buffers[buffers.length - 1].image != null)) {
+        if (imageSize > 1000000) {
+          if (imageSize === buffers[buffers.length - 1].imageSize) {
+            return done();
+          }
+        } else {
+          if (image.toPng().toString('base64') === buffers[buffers.length - 1].image) {
+            return done();
           }
         }
       }
-      if (isEmpty || otherText || otherImage) {
-        currentApp = getActiveApp();
-        if (currentApp === 'Electron') {
-          currentApp = 'clippo';
-        }
-        if ((!originApp) && (!currentApp)) {
-          originApp = 'clippo';
-        }
-        info = {
-          app: saveAppIcon(originApp != null ? originApp : currentApp)
-        };
-        if (text != null) {
-          info.text = text;
-        }
-        if (image != null) {
-          info.image = image.toPng().toString('base64');
-        }
-        if (html != null) {
-          info.html = html;
-        }
-        if (rtf != null) {
-          info.rtf = rtf;
-        }
-        if (imageSize > 1000000) {
-          info.imageSize = imageSize;
-        }
-        buffers.push(info);
-        originApp = void 0;
-        if (win != null) {
-          win.webContents.send('load');
-        }
-      }
     }
-    return setTimeout(listenClipboard, 500);
+    currentApp = getActiveApp();
+    if (currentApp === 'Electron') {
+      currentApp = 'clippo';
+    }
+    if ((!originApp) && (!currentApp)) {
+      originApp = 'clippo';
+    }
+    saveAppIcon(originApp != null ? originApp : currentApp);
+    if (image != null) {
+      buffers.push({
+        app: currentApp,
+        image: image.toPng().toString('base64'),
+        imageSize: imageSize
+      });
+    }
+    if (text != null) {
+      buffers.push({
+        app: currentApp,
+        text: text
+      });
+    }
+    originApp = void 0;
+    if (win != null) {
+      win.webContents.send('load');
+    }
+    return done();
   };
 
   ipc.on('get-buffers', (function(_this) {
@@ -175,20 +173,14 @@
     if ((index < 0) || (index > buffers.length - 1)) {
       return;
     }
-    if ((buffers[index].text != null) && buffers[index].text.length > 0) {
-      clipboard.writeText(buffers[index].text);
-    }
-    if ((buffers[index].html != null) && buffers[index].html.length > 0) {
-      clipboard.writeHtml(buffers[index].html);
-    }
-    if ((buffers[index].rtf != null) && buffers[index].rtf.length > 0) {
-      clipboard.writeRtf(buffers[index].rtf);
-    }
     if (buffers[index].image) {
       image = nativeImage.createFromBuffer(new Buffer(buffers[index].image, 'base64'));
       if (!image.isEmpty() && (image.getSize().width * image.getSize().height > 0)) {
-        return clipboard.writeImage(image);
+        clipboard.writeImage(image, 'image/png');
       }
+    }
+    if ((buffers[index].text != null) && (buffers[index].text.length > 0)) {
+      return clipboard.writeText(buffers[index].text, 'text/plain');
     }
   };
 

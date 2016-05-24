@@ -80,39 +80,46 @@ saveAppIcon = (appName) ->
 #0000000  000  0000000      000     00000000  000   000
 
 listenClipboard = ->
-    formats = clipboard.availableFormats()
-    log 'listen', formats
+    
+    formats   = clipboard.availableFormats()
     text      = clipboard.readText()  if 'text/plain' in formats
-    rtf       = clipboard.readRtf()   if 'text/rtf'   in formats
-    html      = clipboard.readHtml()  if 'text/html'  in formats
     image     = clipboard.readImage() if 'image/png'  in formats
     imageSize = (image.getSize().width * image.getSize().height) if image?
     image     = null if imageSize == 0
-    if text? or image?
-        isEmpty = buffers.length == 0
-        if not isEmpty
-            otherText = text != buffers[buffers.length-1].text
-            if image?
-                if imageSize > 1000000
-                    otherImage = imageSize != buffers[buffers.length-1].imageSize
-                else
-                    otherImage = image? and image.toPng().toString('base64') != buffers[buffers.length-1].image        
-        if isEmpty or otherText or otherImage
-            currentApp = getActiveApp()
-            currentApp = 'clippo' if currentApp == 'Electron'
-            originApp  = 'clippo' if (not originApp) and (not currentApp)
-            info = 
-                app: saveAppIcon originApp ? currentApp
-            if text?  then info.text  = text
-            if image? then info.image = image.toPng().toString('base64')
-            if html?  then info.html  = html
-            if rtf?   then info.rtf   = rtf
-            info.imageSize = imageSize if imageSize > 1000000
-            buffers.push info
-            originApp = undefined
-            # log 'load', formats, info.image?.length
-            win?.webContents.send 'load'
-    setTimeout listenClipboard, 500
+    isEmpty   = buffers.length == 0
+    done      = -> setTimeout listenClipboard, 500
+    
+    if not text? and not image?
+        return done()
+        
+    if buffers.length > 0
+        if text? and buffers[buffers.length-1].text?
+            return done() if text == buffers[buffers.length-1].text
+        if image? and buffers[buffers.length-1].image?
+            if imageSize > 1000000
+                return done() if imageSize == buffers[buffers.length-1].imageSize
+            else
+                return done() if image.toPng().toString('base64') == buffers[buffers.length-1].image
+                
+    currentApp = getActiveApp()
+    currentApp = 'clippo' if currentApp == 'Electron'
+    originApp  = 'clippo' if (not originApp) and (not currentApp)
+    saveAppIcon originApp ? currentApp
+
+    if image? 
+        buffers.push 
+            app: currentApp
+            image: image.toPng().toString('base64')
+            imageSize: imageSize
+    
+    if text? 
+        buffers.push 
+            app: currentApp
+            text: text
+
+    originApp = undefined        
+    win?.webContents.send 'load'
+    done()
 
 # 000  00000000    0000000
 # 000  000   000  000     
@@ -131,13 +138,12 @@ ipc.on 'open-console', => win?.webContents.openDevTools()
 
 copyIndex = (index) ->
     return if (index < 0) or (index > buffers.length-1)
-    if buffers[index].text? and buffers[index].text.length > 0 then clipboard.writeText buffers[index].text 
-    if buffers[index].html? and buffers[index].html.length > 0 then clipboard.writeHtml buffers[index].html
-    if buffers[index].rtf?  and buffers[index].rtf.length  > 0 then clipboard.writeRtf  buffers[index].rtf
     if buffers[index].image
         image = nativeImage.createFromBuffer new Buffer buffers[index].image, 'base64'
         if not image.isEmpty() and (image.getSize().width * image.getSize().height > 0)
-            clipboard.writeImage image
+            clipboard.writeImage image,  'image/png'
+    if buffers[index].text? and (buffers[index].text.length > 0) 
+        clipboard.writeText buffers[index].text, 'text/plain' 
 
 #00000000    0000000    0000000  000000000  00000000
 #000   000  000   000  000          000     000     
