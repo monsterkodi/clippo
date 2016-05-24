@@ -66,6 +66,8 @@ document.onkeydown = (event) ->
         when 'end', 'page down' then return highlight 0
         when 'enter', 'command+v' then return doPaste()
         when 'backspace', 'command+backspace', 'delete' then return ipc.send "del", current
+        when 'command+alt+i'    then return ipc.send 'open-console'
+
     log key
 
 

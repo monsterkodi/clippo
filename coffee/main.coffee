@@ -81,11 +81,13 @@ saveAppIcon = (appName) ->
 
 listenClipboard = ->
     formats = clipboard.availableFormats()
-    # log 'listen', formats
-    text = clipboard.readText() if 'text/plain' in formats
-    image = clipboard.readImage() if 'image/png' in formats
+    log 'listen', formats
+    text      = clipboard.readText()  if 'text/plain' in formats
+    rtf       = clipboard.readRtf()   if 'text/rtf'   in formats
+    html      = clipboard.readHtml()  if 'text/html'  in formats
+    image     = clipboard.readImage() if 'image/png'  in formats
     imageSize = (image.getSize().width * image.getSize().height) if image?
-    image = null if imageSize == 0
+    image     = null if imageSize == 0
     if text? or image?
         isEmpty = buffers.length == 0
         if not isEmpty
@@ -101,8 +103,10 @@ listenClipboard = ->
             originApp  = 'clippo' if (not originApp) and (not currentApp)
             info = 
                 app: saveAppIcon originApp ? currentApp
-            if text? then info.text = text
+            if text?  then info.text  = text
             if image? then info.image = image.toPng().toString('base64')
+            if html?  then info.html  = html
+            if rtf?   then info.rtf   = rtf
             info.imageSize = imageSize if imageSize > 1000000
             buffers.push info
             originApp = undefined
@@ -110,7 +114,14 @@ listenClipboard = ->
             win?.webContents.send 'load'
     setTimeout listenClipboard, 500
 
-ipc.on 'get-buffers', (event, arg) => event.returnValue = buffers
+# 000  00000000    0000000
+# 000  000   000  000     
+# 000  00000000   000     
+# 000  000        000     
+# 000  000         0000000
+
+ipc.on 'get-buffers', (event) => event.returnValue = buffers
+ipc.on 'open-console', => win?.webContents.openDevTools()
 
 # 0000000   0000000   00000000   000   000
 #000       000   000  000   000   000 000 
@@ -120,8 +131,9 @@ ipc.on 'get-buffers', (event, arg) => event.returnValue = buffers
 
 copyIndex = (index) ->
     return if (index < 0) or (index > buffers.length-1)
-    # log "copy #{index}"
-    clipboard.writeText buffers[index].text if buffers[index].text? and buffers[index].text.length > 0
+    if buffers[index].text? and buffers[index].text.length > 0 then clipboard.writeText buffers[index].text 
+    if buffers[index].html? and buffers[index].html.length > 0 then clipboard.writeHtml buffers[index].html
+    if buffers[index].rtf?  and buffers[index].rtf.length  > 0 then clipboard.writeRtf  buffers[index].rtf
     if buffers[index].image
         image = nativeImage.createFromBuffer new Buffer buffers[index].image, 'base64'
         if not image.isEmpty() and (image.getSize().width * image.getSize().height > 0)
@@ -254,7 +266,6 @@ app.on 'ready', ->
         shortcut: 'Command+Alt+V'
 
     electron.globalShortcut.register prefs.get('shortcut'), showWindow
-    electron.globalShortcut.register 'Command+Alt+I', () -> win?.webContents.openDevTools()
 
     readBuffer()
 

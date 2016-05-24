@@ -116,6 +116,8 @@
       case 'command+backspace':
       case 'delete':
         return ipc.send("del", current);
+      case 'command+alt+i':
+        return ipc.send('open-console');
     }
     return log(key);
   };

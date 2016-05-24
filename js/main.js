@@ -89,10 +89,17 @@
   };
 
   listenClipboard = function() {
-    var currentApp, formats, image, imageSize, info, isEmpty, otherImage, otherText, text;
+    var currentApp, formats, html, image, imageSize, info, isEmpty, otherImage, otherText, rtf, text;
     formats = clipboard.availableFormats();
+    log('listen', formats);
     if (indexOf.call(formats, 'text/plain') >= 0) {
       text = clipboard.readText();
+    }
+    if (indexOf.call(formats, 'text/rtf') >= 0) {
+      rtf = clipboard.readRtf();
+    }
+    if (indexOf.call(formats, 'text/html') >= 0) {
+      html = clipboard.readHtml();
     }
     if (indexOf.call(formats, 'image/png') >= 0) {
       image = clipboard.readImage();
@@ -132,6 +139,12 @@
         if (image != null) {
           info.image = image.toPng().toString('base64');
         }
+        if (html != null) {
+          info.html = html;
+        }
+        if (rtf != null) {
+          info.rtf = rtf;
+        }
         if (imageSize > 1000000) {
           info.imageSize = imageSize;
         }
@@ -146,8 +159,14 @@
   };
 
   ipc.on('get-buffers', (function(_this) {
-    return function(event, arg) {
+    return function(event) {
       return event.returnValue = buffers;
+    };
+  })(this));
+
+  ipc.on('open-console', (function(_this) {
+    return function() {
+      return win != null ? win.webContents.openDevTools() : void 0;
     };
   })(this));
 
@@ -158,6 +177,12 @@
     }
     if ((buffers[index].text != null) && buffers[index].text.length > 0) {
       clipboard.writeText(buffers[index].text);
+    }
+    if ((buffers[index].html != null) && buffers[index].html.length > 0) {
+      clipboard.writeHtml(buffers[index].html);
+    }
+    if ((buffers[index].rtf != null) && buffers[index].rtf.length > 0) {
+      clipboard.writeRtf(buffers[index].rtf);
     }
     if (buffers[index].image) {
       image = nativeImage.createFromBuffer(new Buffer(buffers[index].image, 'base64'));
@@ -309,9 +334,6 @@
       shortcut: 'Command+Alt+V'
     });
     electron.globalShortcut.register(prefs.get('shortcut'), showWindow);
-    electron.globalShortcut.register('Command+Alt+I', function() {
-      return win != null ? win.webContents.openDevTools() : void 0;
-    });
     readBuffer();
     iconDir = resolve(__dirname + "/../icons");
     try {
