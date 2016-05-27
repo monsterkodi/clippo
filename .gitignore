@@ -3,5 +3,8 @@ app/img
 app/css
 app/js
 app/index.html
+watch/Build
+watch/DerivedData
 dist
 Icon?
+pb.json
