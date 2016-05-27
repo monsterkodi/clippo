@@ -47,6 +47,10 @@
     return doPaste();
   };
 
+  ipc.on("load", function(event, arg) {
+    return loadBuffers(arg);
+  });
+
   loadBuffers = function(index) {
     var buf, div, encl, html, i, icon, id, j, l, len, pre, span;
     buffers = ipc.sendSync("get-buffers");
@@ -84,10 +88,6 @@
     $("scroll").innerHTML = html;
     return highlight(index != null ? index : buffers.length - 1);
   };
-
-  ipc.on("load", function(event, arg) {
-    return loadBuffers(arg);
-  });
 
   loadBuffers();
 

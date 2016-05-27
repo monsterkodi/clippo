@@ -29,6 +29,14 @@ window.onClick = (index) ->
     highlight index
     doPaste()
 
+# 000       0000000    0000000   0000000  
+# 000      000   000  000   000  000   000
+# 000      000   000  000000000  000   000
+# 000      000   000  000   000  000   000
+# 0000000   0000000   000   000  0000000  
+
+ipc.on "load", (event, arg) -> loadBuffers arg
+
 loadBuffers = (index) ->
     buffers = ipc.sendSync "get-buffers"
     html = ""
@@ -51,8 +59,6 @@ loadBuffers = (index) ->
     html = "<center><p class=\"info\">clipboard is empty</p></center>" if html.length == 0
     $("scroll").innerHTML = html
     highlight index ? buffers.length-1
-
-ipc.on "load", (event, arg) -> loadBuffers arg
 
 loadBuffers()
 

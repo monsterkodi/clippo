@@ -5,12 +5,15 @@
 # 000   000  000   000  000  000   000
 
 electron      = require 'electron'
+chokidar      = require 'chokidar'
 proc          = require 'child_process'
+noon          = require 'noon'
+fs            = require 'fs'
 osascript     = require './tools/osascript'
 resolve       = require './tools/resolve'
 appIconSync   = require './tools/appiconsync'
 prefs         = require './tools/prefs'
-fs            = require 'fs'
+log           = require './tools/log'
 app           = electron.app
 BrowserWindow = electron.BrowserWindow
 Tray          = electron.Tray
@@ -25,8 +28,6 @@ iconDir       = ""
 activeApp     = ""
 originApp     = null
 debug         = false
-
-log = -> console.log ([].slice.call arguments, 0).join " "
 
 # 0000000    0000000  000000000  000  000   000  00000000
 #000   000  000          000     000  000   000  000     
@@ -72,55 +73,46 @@ saveAppIcon = (appName) ->
         png = appIconSync appName, iconDir, 64
         appName = "clippo" if not png
     appName
-        
-#000      000   0000000  000000000  00000000  000   000
-#000      000  000          000     000       0000  000
-#000      000  0000000      000     0000000   000 0 000
-#000      000       000     000     000       000  0000
-#0000000  000  0000000      000     00000000  000   000
 
-listenClipboard = ->
+# 000   000   0000000   000000000   0000000  000   000
+# 000 0 000  000   000     000     000       000   000
+# 000000000  000000000     000     000       000000000
+# 000   000  000   000     000     000       000   000
+# 00     00  000   000     000      0000000  000   000
+
+readPBjson = (path) ->
+
+    obj = noon.load path
+    isEmpty = buffers.length == 0
     
-    formats   = clipboard.availableFormats()
-    text      = clipboard.readText()  if 'text/plain' in formats
-    image     = clipboard.readImage() if 'image/png'  in formats
-    imageSize = (image.getSize().width * image.getSize().height) if image?
-    image     = null if imageSize == 0
-    isEmpty   = buffers.length == 0
-    done      = -> setTimeout listenClipboard, 500
-    
-    if not text? and not image?
-        return done()
-        
-    if buffers.length > 0
-        if text? and buffers[buffers.length-1].text?
-            return done() if text == buffers[buffers.length-1].text
-        if image? and buffers[buffers.length-1].image?
-            if imageSize > 1000000
-                return done() if imageSize == buffers[buffers.length-1].imageSize
-            else
-                return done() if image.toPng().toString('base64') == buffers[buffers.length-1].image
+    return if not obj.text? and not obj.image?
                 
     currentApp = getActiveApp()
     currentApp = 'clippo' if currentApp == 'Electron'
     originApp  = 'clippo' if (not originApp) and (not currentApp)
     saveAppIcon originApp ? currentApp
 
-    if image? 
+    if obj.image? 
         buffers.push 
-            app: currentApp
-            image: image.toPng().toString('base64')
-            imageSize: imageSize
-    
-    if text? 
+            app:   currentApp
+            image: obj.image
+
+    if obj.text? 
         buffers.push 
-            app: currentApp
-            text: text
+            app:  currentApp
+            text: obj.text
 
     originApp = undefined        
     win?.webContents.send 'load'
-    done()
 
+watchClipboard = ->
+
+    proc.spawn "#{__dirname}/../bin/watch", [], cwd: "#{__dirname}/../bin"
+
+    watcher = chokidar.watch "#{__dirname}/../bin/pb.json", persistent: true
+    watcher.on 'add',    (path) => readPBjson path
+    watcher.on 'change', (path) => readPBjson path
+        
 # 000  00000000    0000000
 # 000  000   000  000     
 # 000  00000000   000     
@@ -284,5 +276,5 @@ app.on 'ready', ->
         catch
             log "can't create icon directory #{iconDir}"
     
-    listenClipboard()
+    watchClipboard()
     

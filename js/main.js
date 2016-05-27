@@ -1,10 +1,15 @@
 (function() {
-  var BrowserWindow, Menu, Tray, activateApp, activeApp, app, appIconSync, buffers, clipboard, copyIndex, createWindow, debug, electron, fs, getActiveApp, iconDir, ipc, listenClipboard, log, nativeImage, originApp, osascript, prefs, proc, readBuffer, resolve, saveAppIcon, saveBounds, saveBuffer, showWindow, toggleWindow, tray, updateActiveApp, win,
-    indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
+  var BrowserWindow, Menu, Tray, activateApp, activeApp, app, appIconSync, buffers, chokidar, clipboard, copyIndex, createWindow, debug, electron, fs, getActiveApp, iconDir, ipc, log, nativeImage, noon, originApp, osascript, prefs, proc, readBuffer, readPBjson, resolve, saveAppIcon, saveBounds, saveBuffer, showWindow, toggleWindow, tray, updateActiveApp, watchClipboard, win;
 
   electron = require('electron');
 
+  chokidar = require('chokidar');
+
   proc = require('child_process');
+
+  noon = require('noon');
+
+  fs = require('fs');
 
   osascript = require('./tools/osascript');
 
@@ -14,7 +19,7 @@
 
   prefs = require('./tools/prefs');
 
-  fs = require('fs');
+  log = require('./tools/log');
 
   app = electron.app;
 
@@ -43,10 +48,6 @@
   originApp = null;
 
   debug = false;
-
-  log = function() {
-    return console.log(([].slice.call(arguments, 0)).join(" "));
-  };
 
   getActiveApp = function() {
     var appName, script;
@@ -88,45 +89,12 @@
     return appName;
   };
 
-  listenClipboard = function() {
-    var currentApp, done, formats, image, imageSize, isEmpty, text;
-    formats = clipboard.availableFormats();
-    if (indexOf.call(formats, 'text/plain') >= 0) {
-      text = clipboard.readText();
-    }
-    if (indexOf.call(formats, 'image/png') >= 0) {
-      image = clipboard.readImage();
-    }
-    if (image != null) {
-      imageSize = image.getSize().width * image.getSize().height;
-    }
-    if (imageSize === 0) {
-      image = null;
-    }
+  readPBjson = function(path) {
+    var currentApp, isEmpty, obj;
+    obj = noon.load(path);
     isEmpty = buffers.length === 0;
-    done = function() {
-      return setTimeout(listenClipboard, 500);
-    };
-    if ((text == null) && (image == null)) {
-      return done();
-    }
-    if (buffers.length > 0) {
-      if ((text != null) && (buffers[buffers.length - 1].text != null)) {
-        if (text === buffers[buffers.length - 1].text) {
-          return done();
-        }
-      }
-      if ((image != null) && (buffers[buffers.length - 1].image != null)) {
-        if (imageSize > 1000000) {
-          if (imageSize === buffers[buffers.length - 1].imageSize) {
-            return done();
-          }
-        } else {
-          if (image.toPng().toString('base64') === buffers[buffers.length - 1].image) {
-            return done();
-          }
-        }
-      }
+    if ((obj.text == null) && (obj.image == null)) {
+      return;
     }
     currentApp = getActiveApp();
     if (currentApp === 'Electron') {
@@ -136,24 +104,40 @@
       originApp = 'clippo';
     }
     saveAppIcon(originApp != null ? originApp : currentApp);
-    if (image != null) {
+    if (obj.image != null) {
       buffers.push({
         app: currentApp,
-        image: image.toPng().toString('base64'),
-        imageSize: imageSize
+        image: obj.image
       });
     }
-    if (text != null) {
+    if (obj.text != null) {
       buffers.push({
         app: currentApp,
-        text: text
+        text: obj.text
       });
     }
     originApp = void 0;
-    if (win != null) {
-      win.webContents.send('load');
-    }
-    return done();
+    return win != null ? win.webContents.send('load') : void 0;
+  };
+
+  watchClipboard = function() {
+    var watcher;
+    proc.spawn(__dirname + "/../bin/watch", [], {
+      cwd: __dirname + "/../bin"
+    });
+    watcher = chokidar.watch(__dirname + "/../bin/pb.json", {
+      persistent: true
+    });
+    watcher.on('add', (function(_this) {
+      return function(path) {
+        return readPBjson(path);
+      };
+    })(this));
+    return watcher.on('change', (function(_this) {
+      return function(path) {
+        return readPBjson(path);
+      };
+    })(this));
   };
 
   ipc.on('get-buffers', (function(_this) {
@@ -337,7 +321,7 @@
         log("can't create icon directory " + iconDir);
       }
     }
-    return listenClipboard();
+    return watchClipboard();
   });
 
 }).call(this);
