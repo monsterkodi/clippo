@@ -5,9 +5,9 @@
   "main": "js/main.js",
   "scripts": {
     "start": "electron js/main.js",
-    "compile": "cp -r js css img *.html app",
+    "compile": "cp -r js css img bin *.html app",
     "install": "cd app && npm install",
-    "clean": "rm -rf dist app/js app/img app/css app/*.html app/node_modules",
+    "clean": "rm -rf dist app/js app/img app/bin app/css app/*.html app/node_modules",
     "dist": "npm run clean && npm run compile && npm run install && build",
     "release": "build",
     "test": "fish -c \"killall Electron\" -c \"killall Electron\" -c \"npm start\""
@@ -58,7 +58,7 @@
   },
   "devDependencies": {
     "electron-builder": "next",
-    "electron-prebuilt": "^1.1.1"
+    "electron-prebuilt": "^1.2.0"
   },
   "dependencies": {
     "chokidar": "^1.5.1",
