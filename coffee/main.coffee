@@ -27,6 +27,7 @@ buffers       = []
 iconDir       = ""
 activeApp     = ""
 originApp     = null
+clippoWatch   = null
 debug         = false
 
 # 0000000    0000000  000000000  000  000   000  00000000
@@ -86,6 +87,7 @@ readPBjson = (path) ->
     isEmpty = buffers.length == 0
     
     return if not obj.text? and not obj.image?
+    return if buffers.length and obj.count == buffers[buffers.length-1].count
                 
     currentApp = getActiveApp()
     currentApp = 'clippo' if currentApp == 'Electron'
@@ -96,18 +98,22 @@ readPBjson = (path) ->
         buffers.push 
             app:   currentApp
             image: obj.image
+            count: obj.count
 
     if obj.text? 
         buffers.push 
-            app:  currentApp
-            text: obj.text
+            app:   currentApp
+            text:  obj.text
+            count: obj.count
 
     originApp = undefined        
-    win?.webContents.send 'load'
+    reload()
 
 watchClipboard = ->
 
-    proc.spawn "#{__dirname}/../bin/watch", [], cwd: "#{__dirname}/../bin"
+    clippoWatch = proc.spawn "#{__dirname}/../bin/clippo-watch", [], 
+        cwd: "#{__dirname}/../bin"
+        detached: false
 
     watcher = chokidar.watch "#{__dirname}/../bin/pb.json", persistent: true
     watcher.on 'add',    (path) => readPBjson path
@@ -164,7 +170,7 @@ ipc.on 'del', (event, arg) =>
         clipboard.clear()
         copyIndex buffers.length-2
     buffers.splice(arg, 1)
-    win?.webContents.send 'load', arg-1
+    reload arg-1
     
 #000   000  000  000   000  0000000     0000000   000   000
 #000 0 000  000  0000  000  000   000  000   000  000 0 000
@@ -215,6 +221,13 @@ createWindow = ->
 saveBounds = ->
     if win?
         prefs.set 'bounds', win.getBounds()
+    
+reload = (index=0) -> win?.webContents.send 'load', index
+    
+clearBuffer = ->
+    buffers = []
+    saveBuffer()
+    reload()
         
 saveBuffer = ->
     json = JSON.stringify buffers.slice(- prefs.get('maxBuffers', 50)), null, '    '
@@ -239,9 +252,19 @@ app.on 'ready', ->
     tray.on 'click', toggleWindow
     app.dock.hide() if app.dock
     
+    # 00     00  00000000  000   000  000   000
+    # 000   000  000       0000  000  000   000
+    # 000000000  0000000   000 0 000  000   000
+    # 000 0 000  000       000  0000  000   000
+    # 000   000  00000000  000   000   0000000 
+    
     Menu.setApplicationMenu Menu.buildFromTemplate [
         label: app.getName()
         submenu: [
+            label: 'Clear Buffers'
+            accelerator: 'Command+K'
+            click: -> clearBuffer()
+        ,
             label: 'Save Buffers'
             accelerator: 'Command+S'
             click: -> saveBuffer()
@@ -255,6 +278,7 @@ app.on 'ready', ->
             click: -> 
                 saveBounds()
                 saveBuffer()
+                clippoWatch?.kill()
                 app.exit 0
         ]
     ]

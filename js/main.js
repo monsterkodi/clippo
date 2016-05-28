@@ -1,5 +1,5 @@
 (function() {
-  var BrowserWindow, Menu, Tray, activateApp, activeApp, app, appIconSync, buffers, chokidar, clipboard, copyIndex, createWindow, debug, electron, fs, getActiveApp, iconDir, ipc, log, nativeImage, noon, originApp, osascript, prefs, proc, readBuffer, readPBjson, resolve, saveAppIcon, saveBounds, saveBuffer, showWindow, toggleWindow, tray, updateActiveApp, watchClipboard, win;
+  var BrowserWindow, Menu, Tray, activateApp, activeApp, app, appIconSync, buffers, chokidar, clearBuffer, clipboard, clippoWatch, copyIndex, createWindow, debug, electron, fs, getActiveApp, iconDir, ipc, log, nativeImage, noon, originApp, osascript, prefs, proc, readBuffer, readPBjson, reload, resolve, saveAppIcon, saveBounds, saveBuffer, showWindow, toggleWindow, tray, updateActiveApp, watchClipboard, win;
 
   electron = require('electron');
 
@@ -46,6 +46,8 @@
   activeApp = "";
 
   originApp = null;
+
+  clippoWatch = null;
 
   debug = false;
 
@@ -96,6 +98,9 @@
     if ((obj.text == null) && (obj.image == null)) {
       return;
     }
+    if (buffers.length && obj.count === buffers[buffers.length - 1].count) {
+      return;
+    }
     currentApp = getActiveApp();
     if (currentApp === 'Electron') {
       currentApp = 'clippo';
@@ -107,23 +112,26 @@
     if (obj.image != null) {
       buffers.push({
         app: currentApp,
-        image: obj.image
+        image: obj.image,
+        count: obj.count
       });
     }
     if (obj.text != null) {
       buffers.push({
         app: currentApp,
-        text: obj.text
+        text: obj.text,
+        count: obj.count
       });
     }
     originApp = void 0;
-    return win != null ? win.webContents.send('load') : void 0;
+    return reload();
   };
 
   watchClipboard = function() {
     var watcher;
-    proc.spawn(__dirname + "/../bin/watch", [], {
-      cwd: __dirname + "/../bin"
+    clippoWatch = proc.spawn(__dirname + "/../bin/clippo-watch", [], {
+      cwd: __dirname + "/../bin",
+      detached: false
     });
     watcher = chokidar.watch(__dirname + "/../bin/pb.json", {
       persistent: true
@@ -188,7 +196,7 @@
         copyIndex(buffers.length - 2);
       }
       buffers.splice(arg, 1);
-      return win != null ? win.webContents.send('load', arg - 1) : void 0;
+      return reload(arg - 1);
     };
   })(this));
 
@@ -250,6 +258,19 @@
     }
   };
 
+  reload = function(index) {
+    if (index == null) {
+      index = 0;
+    }
+    return win != null ? win.webContents.send('load', index) : void 0;
+  };
+
+  clearBuffer = function() {
+    buffers = [];
+    saveBuffer();
+    return reload();
+  };
+
   saveBuffer = function() {
     var json;
     json = JSON.stringify(buffers.slice(-prefs.get('maxBuffers', 50)), null, '    ');
@@ -282,6 +303,12 @@
         label: app.getName(),
         submenu: [
           {
+            label: 'Clear Buffers',
+            accelerator: 'Command+K',
+            click: function() {
+              return clearBuffer();
+            }
+          }, {
             label: 'Save Buffers',
             accelerator: 'Command+S',
             click: function() {
@@ -299,6 +326,9 @@
             click: function() {
               saveBounds();
               saveBuffer();
+              if (clippoWatch != null) {
+                clippoWatch.kill();
+              }
               return app.exit(0);
             }
           }
