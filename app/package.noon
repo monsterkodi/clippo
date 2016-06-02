@@ -1,6 +1,6 @@
 name          clippo
-version       1.2.0
-description   Clipboard tool
+version       1.2.1
+description   clipboard tool
 main          js/main.js
 repository
               type  git

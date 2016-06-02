@@ -17,6 +17,12 @@ log = -> console.log ([].slice.call arguments, 0).join " "
 
 doPaste = -> ipc.send 'paste', current
 
+# 000   000  000   0000000   000   000  000      000   0000000   000   000  000000000
+# 000   000  000  000        000   000  000      000  000        000   000     000   
+# 000000000  000  000  0000  000000000  000      000  000  0000  000000000     000   
+# 000   000  000  000   000  000   000  000      000  000   000  000   000     000   
+# 000   000  000   0000000   000   000  0000000  000   0000000   000   000     000   
+
 highlight = (index) =>
     $(current)?.className = ""
     current = Math.max 0, Math.min index, buffers.length-1
@@ -61,6 +67,12 @@ loadBuffers = (index) ->
     highlight index ? buffers.length-1
 
 loadBuffers()
+
+# 000   000  00000000  000   000
+# 000  000   000        000 000 
+# 0000000    0000000     00000  
+# 000  000   000          000   
+# 000   000  00000000     000   
 
 document.onkeydown = (event) ->
     key = keyname.ofEvent event

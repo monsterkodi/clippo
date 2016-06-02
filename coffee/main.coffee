@@ -14,6 +14,7 @@ resolve       = require './tools/resolve'
 appIconSync   = require './tools/appiconsync'
 prefs         = require './tools/prefs'
 log           = require './tools/log'
+pkg           = require '../package.json'
 app           = electron.app
 BrowserWindow = electron.BrowserWindow
 Tray          = electron.Tray
@@ -106,8 +107,12 @@ readPBjson = (path) ->
             text:  obj.text
             count: obj.count
 
+    maxBuffers = prefs.get 'maxBuffers', 50
+    while buffers.length > maxBuffers
+        buffers.shift()
+
     originApp = undefined        
-    reload()
+    reload buffers.length-1
 
 watchClipboard = ->
 
@@ -261,6 +266,9 @@ app.on 'ready', ->
     Menu.setApplicationMenu Menu.buildFromTemplate [
         label: app.getName()
         submenu: [
+            label: "About #{pkg.name}"
+            click: -> clipboard.writeText "#{pkg.name} v#{pkg.version}"
+        ,            
             label: 'Clear Buffers'
             accelerator: 'Command+K'
             click: -> clearBuffer()

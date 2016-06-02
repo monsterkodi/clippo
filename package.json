@@ -1,7 +1,7 @@
 {
   "name": "clippo",
-  "version": "1.2.0",
-  "description": "Clipboard tool",
+  "version": "1.2.1",
+  "description": "clipboard tool",
   "main": "js/main.js",
   "scripts": {
     "start": "electron js/main.js",
@@ -57,14 +57,14 @@
     }
   },
   "devDependencies": {
-    "electron-builder": "next",
-    "electron-prebuilt": "^1.2.0"
+    "electron-builder": "^4.2.0",
+    "electron-prebuilt": "^1.2.1"
   },
   "dependencies": {
     "chokidar": "^1.5.1",
     "html-entities": "^1.2.0",
-    "keycode": "^2.1.1",
-    "lodash": "^4.12.0",
+    "keycode": "^2.1.2",
+    "lodash": "^4.13.1",
     "noon": "^1.0.8"
   }
 }

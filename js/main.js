@@ -1,5 +1,5 @@
 (function() {
-  var BrowserWindow, Menu, Tray, activateApp, activeApp, app, appIconSync, buffers, chokidar, clearBuffer, clipboard, clippoWatch, copyIndex, createWindow, debug, electron, fs, getActiveApp, iconDir, ipc, log, nativeImage, noon, originApp, osascript, prefs, proc, readBuffer, readPBjson, reload, resolve, saveAppIcon, saveBounds, saveBuffer, showWindow, toggleWindow, tray, updateActiveApp, watchClipboard, win;
+  var BrowserWindow, Menu, Tray, activateApp, activeApp, app, appIconSync, buffers, chokidar, clearBuffer, clipboard, clippoWatch, copyIndex, createWindow, debug, electron, fs, getActiveApp, iconDir, ipc, log, nativeImage, noon, originApp, osascript, pkg, prefs, proc, readBuffer, readPBjson, reload, resolve, saveAppIcon, saveBounds, saveBuffer, showWindow, toggleWindow, tray, updateActiveApp, watchClipboard, win;
 
   electron = require('electron');
 
@@ -20,6 +20,8 @@
   prefs = require('./tools/prefs');
 
   log = require('./tools/log');
+
+  pkg = require('../package.json');
 
   app = electron.app;
 
@@ -92,7 +94,7 @@
   };
 
   readPBjson = function(path) {
-    var currentApp, isEmpty, obj;
+    var currentApp, isEmpty, maxBuffers, obj;
     obj = noon.load(path);
     isEmpty = buffers.length === 0;
     if ((obj.text == null) && (obj.image == null)) {
@@ -123,8 +125,12 @@
         count: obj.count
       });
     }
+    maxBuffers = prefs.get('maxBuffers', 50);
+    while (buffers.length > maxBuffers) {
+      buffers.shift();
+    }
     originApp = void 0;
-    return reload();
+    return reload(buffers.length - 1);
   };
 
   watchClipboard = function() {
@@ -303,6 +309,11 @@
         label: app.getName(),
         submenu: [
           {
+            label: "About " + pkg.name,
+            click: function() {
+              return clipboard.writeText(pkg.name + " v" + pkg.version);
+            }
+          }, {
             label: 'Clear Buffers',
             accelerator: 'Command+K',
             click: function() {
