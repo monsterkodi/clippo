@@ -1,7 +1,7 @@
 {
   "name": "clippo",
   "version": "1.2.1",
-  "description": "clipboard tool",
+  "description": "Clipboard tool",
   "main": "js/main.js",
   "repository": {
     "type": "git",

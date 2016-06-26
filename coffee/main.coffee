@@ -49,7 +49,7 @@ getActiveApp = ->
 
 updateActiveApp = -> 
     appName = getActiveApp()
-    if appName != app.getName() and appName != "Electron"
+    if appName != app.getName()
         activeApp = appName
 
 activateApp = ->
@@ -256,6 +256,8 @@ app.on 'ready', ->
     tray = new Tray "#{__dirname}/../img/menu.png"
     tray.on 'click', toggleWindow
     app.dock.hide() if app.dock
+    
+    app.setName 'clippo'
     
     # 00     00  00000000  000   000  000   000
     # 000   000  000       0000  000  000   000

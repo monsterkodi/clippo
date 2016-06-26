@@ -63,7 +63,7 @@
   updateActiveApp = function() {
     var appName;
     appName = getActiveApp();
-    if (appName !== app.getName() && appName !== "Electron") {
+    if (appName !== app.getName()) {
       return activeApp = appName;
     }
   };
@@ -304,6 +304,7 @@
     if (app.dock) {
       app.dock.hide();
     }
+    app.setName('clippo');
     Menu.setApplicationMenu(Menu.buildFromTemplate([
       {
         label: app.getName(),
