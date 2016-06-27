@@ -1,6 +1,6 @@
 name            clippo
-version         1.2.1
-description     Clipboard tool
+version         1.2.2
+description     clipboard tool
 main            js/main.js
 scripts
                 start     electron js/main.js
@@ -46,11 +46,11 @@ build
                       y     70
                       type  file
 devDependencies
-                electron-builder  next
-                electron-prebuilt  ^1.2.0
+                electron-builder  ^5.10.0
+                electron-prebuilt  ^1.2.5
 dependencies
-                chokidar        ^1.5.1
+                chokidar        ^1.6.0
                 html-entities   ^1.2.0
-                keycode         ^2.1.1
-                lodash          ^4.12.0
-                noon            ^1.0.8
+                keycode         ^2.1.2
+                lodash          ^4.13.1
+                noon            ^1.0.9
