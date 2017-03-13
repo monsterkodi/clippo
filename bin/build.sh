@@ -13,4 +13,4 @@ node_modules/electron-packager/cli.js . --overwrite --icon=img/$NAME.icns
 rm $NAME-darwin-x64/LICENSE*
 rm $NAME-darwin-x64/version
 
-open $NAME-darwin-x64/$NAME.app 
+# open $NAME-darwin-x64/$NAME.app 
