@@ -9,3 +9,4 @@ bin/*.json
 css
 js
 *.html
+yarn.lock

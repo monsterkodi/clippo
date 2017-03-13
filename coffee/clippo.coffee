@@ -84,6 +84,9 @@ setTitleBar = ->
 setTitleBar()
 loadBuffers ipc.sendSync "getBuffers"
 
+window.onunload = ->
+    document.onkeydown = null
+
 # 000   000  00000000  000   000
 # 000  000   000        000 000 
 # 0000000    0000000     00000  
@@ -92,9 +95,8 @@ loadBuffers ipc.sendSync "getBuffers"
 
 document.onkeydown = (event) ->
     key = keyname.ofEvent event
-    log key
     switch key
-        when 'esc'                then return window.close()
+        when 'esc'                then return ipc.send 'closeWin'
         when 'down', 'right'      then return highlight current-1
         when 'up'  , 'left'       then return highlight current+1
         when 'home', 'page up'    then return highlight buffers.length-1

@@ -39,6 +39,7 @@ debug         = false
 
 ipc.on 'getBuffers', (event)  -> event.returnValue = buffers
 ipc.on 'toggleMaximize',      -> if win?.isMaximized() then win?.unmaximize() else win?.maximize()
+ipc.on 'closeWin',            -> win?.close()
 
 # 0000000    0000000  000000000  000  000   000  00000000
 #000   000  000          000     000  000   000  000     
@@ -284,6 +285,18 @@ app.on 'ready', ->
             label: 'Save Buffer'
             accelerator: 'Command+S'
             click: -> saveBuffer()
+        ,
+            type: 'separator'
+        ,
+            label:       "Hide #{pkg.productName}"
+            accelerator: 'Cmd+H'
+            click:        -> win?.hide()
+        ,
+            label:       'Hide Others'
+            accelerator: 'Cmd+Alt+H'
+            role:        'hideothers'
+        ,
+            type: 'separator'
         ,
             label: 'Quit'
             accelerator: 'Command+Q'
