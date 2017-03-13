@@ -8,4 +8,5 @@ watch/Build
 watch/DerivedData
 dist
 Icon?
-pb.json
+pb.jsonbin/dmg.json
+package.json

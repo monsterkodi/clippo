@@ -1,0 +1,19 @@
+{
+  "title": "clippo",
+  "icon": "../img/clippo.icns",
+  "background": "../img/dmg.png",
+  "contents": [
+    {
+      "x": 100,
+      "y": 180,
+      "type": "link",
+      "path": "/Applications"
+    },
+    {
+      "x": 100,
+      "y": 70,
+      "type": "file",
+      "path": "../clippo-darwin-x64/clippo.app"
+    }
+  ]
+}
