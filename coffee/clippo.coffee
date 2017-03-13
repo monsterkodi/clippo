@@ -6,6 +6,7 @@
 
 electron  = require 'electron'
 keyname   = require './tools/keyname'
+elem      = require './tools/elem'
 pkg       = require '../package.json'
 clipboard = electron.clipboard
 ipc       = electron.ipcRenderer
@@ -28,8 +29,8 @@ highlight = (index) =>
     $(current)?.classList.remove 'current'
     current = Math.max 0, Math.min index, buffers.length-1
     pre = $(current)
-    pre.classList.add 'current'
-    pre.scrollIntoViewIfNeeded()
+    pre?.classList.add 'current'
+    pre?.scrollIntoViewIfNeeded()
     
 window.highlight = highlight
 window.onClick = (index) ->
@@ -52,26 +53,31 @@ $('main').addEventListener "mouseover", (event) ->
 
 ipc.on "loadBuffers", (event, buffs, index) -> loadBuffers buffs, index
 
-loadBuffers = (buffs, index=0) ->
+loadBuffers = (buffs, index) ->
+    
     buffers = buffs
-    html = ""
+    
+    $('main').innerHTML = ""
+    
     i = 0
     for buf in buffers
-        
-        icon = "<img  onClick='window.highlight(#{i});' class=\"appicon\" src=\"icons/#{buf.app}.png\"/>\n"
-        if buf.image?
-            pre  = "<img src=\"data:image/png;base64,#{buf.image}\"/>\n"
-        else if buf.text?
-            encl = ( encode(l) for l in buf.text.split("\n")  )
-            pre  = "<pre>" + encl.join("<br>") + "</pre>\n"
-        else
-            pre = ""
-        span = "<span class=\"line-span\">" + icon + pre + "</span>"
-        div  = "<div id=#{i} class=\"line-div\" onClick='window.onClick(#{i});'>#{span}</div>"
-        html = div + html
+        div = elem id: i, class: 'line-div', onClick: "window.onClick(#{i});", child:
+            elem 'span', class: 'line-span', children: [
+                elem 'img', onClick: "window.highlight(#{i});", class: 'appicon', src: "icons/#{buf.app}.png"
+                if buf.image?
+                    elem 'img', src: "data:image/png;base64,#{buf.image}"
+                else if buf.text?
+                    encl = ( encode(l) for l in buf.text.split "\n" )
+                    elem 'pre', html: encl.join "<br>" 
+                else
+                    elem 'pre'
+                ]
+        $('main').insertBefore div, $('main').firstChild
         i += 1
-    html = "<center><p class=\"info\">clipboard is empty</p></center>" if html.length == 0
-    $("main").innerHTML = html
+        
+    if buffers.length == 0
+        $('main').innerHTML = "<center><p class=\"info\">clipboard is empty</p></center>" 
+        
     highlight index ? buffers.length-1
 
 setTitleBar = ->
