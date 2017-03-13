@@ -1,14 +1,7 @@
 node_modules
-app/img
-app/css
-app/js
-app/bin
-app/index.html
 watch/Build
 watch/DerivedData
-dist
 Icon?
-pb.jsonbin/dmg.json
 package.json
 bin/*.json
 *.dmg
