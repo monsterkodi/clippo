@@ -11,9 +11,10 @@ elem = (typ, opt) ->
     
     if _.isPlainObject typ
         opt = typ 
-        typ = opt.typ ? 'div'
-    else if not opt?
-        opt = {}
+        typ = opt.typ
+        
+    opt = {}    if not opt?
+    typ = 'div' if not typ?
 
     e = document.createElement typ
     

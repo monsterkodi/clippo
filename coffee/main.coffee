@@ -290,7 +290,7 @@ app.on 'ready', ->
         ,
             label:       "Hide #{pkg.productName}"
             accelerator: 'Cmd+H'
-            click:        -> win?.hide()
+            role:        'hide'
         ,
             label:       'Hide Others'
             accelerator: 'Cmd+Alt+H'
