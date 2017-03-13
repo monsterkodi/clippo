@@ -6,6 +6,7 @@
 
 electron  = require 'electron'
 keyname   = require './tools/keyname'
+pkg       = require '../package.json'
 clipboard = electron.clipboard
 ipc       = electron.ipcRenderer
 current   = 0
@@ -24,10 +25,10 @@ doPaste = -> ipc.send 'paste', current
 # 000   000  000   0000000   000   000  0000000  000   0000000   000   000     000   
 
 highlight = (index) =>
-    $(current)?.className = ""
+    $(current)?.classList.remove 'current'
     current = Math.max 0, Math.min index, buffers.length-1
     pre = $(current)
-    pre.className = 'current'
+    pre.classList.add 'current'
     pre.scrollIntoViewIfNeeded()
     
 window.highlight = highlight
@@ -35,38 +36,53 @@ window.onClick = (index) ->
     highlight index
     doPaste()
 
+lineForElem = (elem) ->        
+    if elem.classList?.contains('line-div') then return elem
+    if elem.parentNode? then return lineForElem elem.parentNode
+    
+$('main').addEventListener "mouseover", (event) ->
+    id = lineForElem(event.target)?.id
+    highlight id if id?
+
 # 000       0000000    0000000   0000000  
 # 000      000   000  000   000  000   000
 # 000      000   000  000000000  000   000
 # 000      000   000  000   000  000   000
 # 0000000   0000000   000   000  0000000  
 
-ipc.on "load", (event, arg) -> loadBuffers arg
+ipc.on "loadBuffers", (event, buffs, index) -> loadBuffers buffs, index
 
-loadBuffers = (index) ->
-    buffers = ipc.sendSync "get-buffers"
+loadBuffers = (buffs, index=0) ->
+    buffers = buffs
     html = ""
     i = 0
     for buf in buffers
         
         icon = "<img  onClick='window.highlight(#{i});' class=\"appicon\" src=\"icons/#{buf.app}.png\"/>\n"
-        id = "id=#{i} onClick='window.onClick(#{i});'"
         if buf.image?
-            pre  = "<img #{id} src=\"data:image/png;base64,#{buf.image}\"/>\n"
+            pre  = "<img src=\"data:image/png;base64,#{buf.image}\"/>\n"
         else if buf.text?
             encl = ( encode(l) for l in buf.text.split("\n")  )
-            pre  = "<pre #{id}>" + encl.join("<br>") + "</pre>\n"
+            pre  = "<pre>" + encl.join("<br>") + "</pre>\n"
         else
             pre = ""
         span = "<span class=\"line-span\">" + icon + pre + "</span>"
-        div  = "<div  class=\"line-div\">#{span}</div>"
+        div  = "<div id=#{i} class=\"line-div\" onClick='window.onClick(#{i});'>#{span}</div>"
         html = div + html
         i += 1
     html = "<center><p class=\"info\">clipboard is empty</p></center>" if html.length == 0
-    $("scroll").innerHTML = html
+    $("main").innerHTML = html
     highlight index ? buffers.length-1
 
-loadBuffers()
+setTitleBar = ->
+    html  = "<span class='titlebarName'>#{pkg.name}</span>"
+    html += "<span class='titlebarDot'> ● </span>"
+    html += "<span class='titlebarVersion'>#{pkg.version}</span>"
+    $('titlebar').innerHTML = html
+    $('titlebar').ondblclick = => ipc.send 'toggleMaximize'
+
+setTitleBar()
+loadBuffers ipc.sendSync "getBuffers"
 
 # 000   000  00000000  000   000
 # 000  000   000        000 000 
@@ -76,16 +92,12 @@ loadBuffers()
 
 document.onkeydown = (event) ->
     key = keyname.ofEvent event
+    log key
     switch key
-        when 'esc'              then return window.close()
-        when 'down', 'right'    then return highlight current-1
-        when 'up'  , 'left'     then return highlight current+1
-        when 'home', 'page up'  then return highlight buffers.length-1
-        when 'end', 'page down' then return highlight 0
+        when 'esc'                then return window.close()
+        when 'down', 'right'      then return highlight current-1
+        when 'up'  , 'left'       then return highlight current+1
+        when 'home', 'page up'    then return highlight buffers.length-1
+        when 'end',  'page down'  then return highlight 0
         when 'enter', 'command+v' then return doPaste()
         when 'backspace', 'command+backspace', 'delete' then return ipc.send "del", current
-        when 'command+alt+i'    then return ipc.send 'open-console'
-
-    log key
-
-

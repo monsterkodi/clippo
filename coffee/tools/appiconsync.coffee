@@ -6,12 +6,11 @@
 
 fs      = require 'fs'
 path    = require 'path'
-noon    = require 'noon'
-proc    = require 'child_process'
-osas    = require './osascript'
+plist   = require 'simple-plist'
+childp  = require 'child_process'
 resolve = require './resolve'
 
-module.exports = (appName, outDir=".", size=128) ->
+module.exports = (appName, outDir=".", size=1024) ->
 
     appName += ".app" if not appName.endsWith '.app'
 
@@ -21,30 +20,22 @@ module.exports = (appName, outDir=".", size=128) ->
             "/System/Library/CoreServices"
             "~/Applications"
         ]
-        absPath = resolve appFolder + "/" + appName
-        conPath = absPath + "/Contents"
+        absPath = resolve path.join appFolder, appName
+        conPath = path.join absPath, 'Contents'
         try
-            fs.accessSync absPath, fs.R_OK
-            infoPath = conPath + "/Info.plist"
+            infoPath = path.join conPath, 'Info.plist'
             fs.accessSync infoPath, fs.R_OK
-            obj = noon.load infoPath
+            obj = plist.readFileSync infoPath
             if obj['CFBundleIconFile']?
-                icnsPath = path.dirname(infoPath) + "/Resources/" + obj['CFBundleIconFile']
+                icnsPath = path.join path.dirname(infoPath), 'Resources', obj['CFBundleIconFile']
                 icnsPath += ".icns" if not icnsPath.endsWith '.icns'
                 fs.accessSync icnsPath, fs.R_OK 
-                pngPath = resolve outDir + "/" + path.basename(appName, path.extname(appName)) + ".png"
-                script = osas """
-                tell application "Image Events"
-                    set f to (POSIX file "#{icnsPath}")
-                    set img to open f
-                    tell img
-                        scale to size "#{size}"
-                        save as PNG in "#{pngPath}"
-                    end tell
-                end tell
-                """
-                proc.execSync "osascript " + script
+                pngPath = resolve path.join outDir, path.basename(appName, path.extname(appName)) + ".png"
+                childp.execSync "/usr/bin/sips -Z #{size} -s format png #{icnsPath} --out #{pngPath}"
                 fs.accessSync pngPath, fs.R_OK
                 return pngPath
+            # else
+                # console.log "no icon in plist #{infoPath}?", obj
         catch err
+            # console.log "[ERROR] appIconSync: #{absPath} #{err}"
             continue

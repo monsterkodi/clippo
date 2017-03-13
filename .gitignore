@@ -10,3 +10,6 @@ dist
 Icon?
 pb.jsonbin/dmg.json
 package.json
+bin/*.json
+*.dmg
+*-darwin-x64

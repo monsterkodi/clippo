@@ -19,11 +19,14 @@ license         Unlicense
 bugs
                 url  https://github.com/monsterkodi/clippo/issues
 dependencies
-                chokidar        ^1.6.0
+                chokidar        ^1.6.1
                 html-entities   ^1.2.0
-                keycode         ^2.1.2
-                lodash          ^4.13.1
-                noon            ^1.0.9
+                keycode         ^2.1.8
+                lodash          ^4.17.4
+                noon            >=1.0.14
+                simple-plist    ^0.2.1
 devDependencies
+                appdmg          ^0.4.5
                 electron        ^1.6.2
+                electron-packager  ^8.5.2
                 electron-rebuild  ^1.5.7

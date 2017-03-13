@@ -6,7 +6,7 @@
 
 electron      = require 'electron'
 chokidar      = require 'chokidar'
-proc          = require 'child_process'
+childp        = require 'child_process'
 noon          = require 'noon'
 fs            = require 'fs'
 osascript     = require './tools/osascript'
@@ -31,6 +31,15 @@ originApp     = null
 clippoWatch   = null
 debug         = false
 
+# 000  00000000    0000000
+# 000  000   000  000     
+# 000  00000000   000     
+# 000  000        000     
+# 000  000         0000000
+
+ipc.on 'getBuffers', (event)  -> event.returnValue = buffers
+ipc.on 'toggleMaximize',      -> if win?.isMaximized() then win?.unmaximize() else win?.maximize()
+
 # 0000000    0000000  000000000  000  000   000  00000000
 #000   000  000          000     000  000   000  000     
 #000000000  000          000     000   000 000   0000000 
@@ -44,8 +53,10 @@ getActiveApp = ->
     end tell
     do shell script "echo " & n
     """
-    appName = proc.execSync "osascript #{script}"
+    appName = childp.execSync "osascript #{script}"
     appName = String(appName).trim()    
+    # log 'getActiveApp', appName
+    appName
 
 updateActiveApp = -> 
     appName = getActiveApp()
@@ -55,7 +66,7 @@ updateActiveApp = ->
 activateApp = ->
     if activeApp.length
         try
-            proc.execSync "osascript " + osascript """
+            childp.execSync "osascript " + osascript """
             tell application "#{activeApp}" to activate
             """
         catch
@@ -68,11 +79,13 @@ activateApp = ->
 #000   000  000        000        000   0000000   0000000   000   000
         
 saveAppIcon = (appName) ->
+    # log 'saveAppIcon', appName
     iconPath = "#{iconDir}/#{appName}.png"
     try 
         fs.accessSync iconPath, fs.R_OK
     catch
-        png = appIconSync appName, iconDir, 64
+        png = appIconSync appName, iconDir, 128
+        # log "appIconSync #{iconPath} -> png: #{png}"
         appName = "clippo" if not png
     appName
 
@@ -85,6 +98,7 @@ saveAppIcon = (appName) ->
 readPBjson = (path) ->
 
     obj = noon.load path
+    
     isEmpty = buffers.length == 0
     
     return if not obj.text? and not obj.image?
@@ -116,7 +130,7 @@ readPBjson = (path) ->
 
 watchClipboard = ->
 
-    clippoWatch = proc.spawn "#{__dirname}/../bin/clippo-watch", [], 
+    clippoWatch = childp.spawn "#{__dirname}/../bin/clippo-watch", [], 
         cwd: "#{__dirname}/../bin"
         detached: false
 
@@ -124,15 +138,6 @@ watchClipboard = ->
     watcher.on 'add',    (path) => readPBjson path
     watcher.on 'change', (path) => readPBjson path
         
-# 000  00000000    0000000
-# 000  000   000  000     
-# 000  00000000   000     
-# 000  000        000     
-# 000  000         0000000
-
-ipc.on 'get-buffers', (event) => event.returnValue = buffers
-ipc.on 'open-console', => win?.webContents.openDevTools()
-
 # 0000000   0000000   00000000   000   000
 #000       000   000  000   000   000 000 
 #000       000   000  00000000     00000  
@@ -159,7 +164,7 @@ ipc.on 'paste', (event, arg) =>
     originApp = buffers.splice(arg, 1)[0].app
     win.close()
     paste = () ->
-        proc.exec "osascript " + osascript """
+        childp.exec "osascript " + osascript """
         tell application "System Events" to keystroke "v" using command down
         """
     setTimeout paste, 10
@@ -205,7 +210,7 @@ createWindow = ->
         titleBarStyle:   'hidden'
         backgroundColor: '#181818'
         maximizable:     true
-        minimizable:     false
+        minimizable:     true
         fullscreen:      false
         show:            true
         
@@ -215,6 +220,7 @@ createWindow = ->
     win.loadURL "file://#{__dirname}/../index.html"
     win.webContents.openDevTools() if debug
     app.dock.show()
+    win.on 'ready-to-show', -> win.show()
     win.on 'closed', -> win = null
     win.on 'close', (event) ->
         activateApp()
@@ -227,7 +233,7 @@ saveBounds = ->
     if win?
         prefs.set 'bounds', win.getBounds()
     
-reload = (index=0) -> win?.webContents.send 'load', index
+reload = (index=0) -> win?.webContents.send 'loadBuffers', buffers, index
     
 clearBuffer = ->
     buffers = []
@@ -271,17 +277,13 @@ app.on 'ready', ->
             label: "About #{pkg.name}"
             click: -> clipboard.writeText "#{pkg.name} v#{pkg.version}"
         ,            
-            label: 'Clear Buffers'
+            label: 'Clear Buffer'
             accelerator: 'Command+K'
             click: -> clearBuffer()
         ,
-            label: 'Save Buffers'
+            label: 'Save Buffer'
             accelerator: 'Command+S'
             click: -> saveBuffer()
-        ,
-            label: 'Close Window'
-            accelerator: 'Command+W'
-            click: -> win.close()
         ,
             label: 'Quit'
             accelerator: 'Command+Q'
@@ -290,6 +292,45 @@ app.on 'ready', ->
                 saveBuffer()
                 clippoWatch?.kill()
                 app.exit 0
+        ]
+    ,
+        # 000   000  000  000   000  0000000     0000000   000   000
+        # 000 0 000  000  0000  000  000   000  000   000  000 0 000
+        # 000000000  000  000 0 000  000   000  000   000  000000000
+        # 000   000  000  000  0000  000   000  000   000  000   000
+        # 00     00  000  000   000  0000000     0000000   00     00
+        
+        label: 'Window'
+        submenu: [
+            label:       'Minimize'
+            accelerator: 'Alt+Cmd+M'
+            click:       -> win?.minimize()
+        ,
+            label:       'Maximize'
+            accelerator: 'Cmd+Shift+m'
+            click:       -> if win?.isMaximized() then win?.unmaximize() else win?.maximize()
+        ,
+            type: 'separator'
+        ,                            
+            label:       'Close Window'
+            accelerator: 'Cmd+W'
+            click:       -> win?.close()
+        ,
+            type: 'separator'
+        ,                            
+            label:       'Bring All to Front'
+            accelerator: 'Alt+Cmd+`'
+            click:       -> win?.show()
+        ,
+            type: 'separator'
+        ,   
+            label:       'Reload Window'
+            accelerator: 'Ctrl+Alt+Cmd+L'
+            click:       -> win?.webContents.reloadIgnoringCache()
+        ,                
+            label:       'Toggle DevTools'
+            accelerator: 'Cmd+Alt+I'
+            click:       -> win?.webContents.openDevTools()
         ]
     ]
         
