@@ -41,7 +41,7 @@ ipc.on 'paste', (event, index) -> pasteIndex index
 ipc.on 'del',   (event, index) -> deleteIndex index 
 ipc.on 'getBuffers', (event)   -> event.returnValue = buffers
 ipc.on 'toggleMaximize',       -> if win?.isMaximized() then win?.unmaximize() else win?.maximize()
-ipc.on 'closeWin',            -> win?.close()
+ipc.on 'closeWin',             -> win?.close()
 
 # 0000000    0000000  000000000  000  000   000  00000000
 #000   000  000          000     000  000   000  000     
@@ -188,7 +188,7 @@ deleteIndex = (index) ->
 toggleWindow = ->
     if win?.isVisible()
         win.hide()    
-        app.dock.hide()        
+        app.dock.hide()
     else
         showWindow()
 
@@ -196,9 +196,9 @@ showWindow = ->
     updateActiveApp()
     if win?
         win.show()
-        app.dock.show()
     else
         createWindow()
+    app.dock.show()
     
 createWindow = ->
     win = new BrowserWindow
@@ -216,14 +216,12 @@ createWindow = ->
         
     win.loadURL "file://#{__dirname}/../index.html"
     win.webContents.openDevTools() if debug
-    app.dock.show()
     win.on 'ready-to-show', -> win.show()
     win.on 'closed', -> win = null
-    win.on 'close', (event) ->
+    win.on 'close',  ->
         activateApp()
-        win.hide()
         app.dock.hide()
-        event.preventDefault()
+    app.dock.show()
     win
 
 saveBounds = ->
@@ -247,6 +245,8 @@ readBuffer = ->
         buffers = JSON.parse fs.readFileSync "#{app.getPath('userData')}/clippo-buffers.json", encoding:'utf8'
     catch
         return
+        
+app.on 'window-all-closed', (event) -> event.preventDefault()
 
 #00000000   00000000   0000000   0000000    000   000
 #000   000  000       000   000  000   000   000 000 

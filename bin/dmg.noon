@@ -1,6 +1,10 @@
 title  clippo
 icon   ../img/clippo.icns
 background  ../img/dmg.png
+window
+    position
+        x   200
+        y   600
 contents
     .
         x   100

@@ -90,8 +90,7 @@ setTitleBar = ->
 setTitleBar()
 loadBuffers ipc.sendSync 'getBuffers'
 
-window.onunload = ->
-    document.onkeydown = null
+window.onunload = -> document.onkeydown = null
 
 # 000   000  00000000  000   000
 # 000  000   000        000 000 
