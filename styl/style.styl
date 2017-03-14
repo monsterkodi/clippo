@@ -90,6 +90,9 @@ body
     background          #121212
     color               #aaa
 
+#buffer
+    position            absolute
+
 // 000      000  000   000  00000000   0000000  
 // 000      000  0000  000  000       000       
 // 000      000  000 0 000  0000000   0000000   
@@ -99,6 +102,7 @@ body
 .line-div
     padding                 frameWidth
     padding-left            2 * frameWidth
+    position                relative
                 
 span.line-span
     -webkit-app-region      no-drag
@@ -134,6 +138,8 @@ pre
                 
 .current 
     background              #000
+    border-top-right-radius 6px
+    border-bottom-right-radius 6px
     & pre
         color               #fff
     & .line-span img:not(.appicon)

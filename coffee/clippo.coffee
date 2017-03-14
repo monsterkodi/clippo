@@ -3,18 +3,18 @@
 # 000       000      000  00000000   00000000   000   000
 # 000       000      000  000        000        000   000
 #  0000000  0000000  000  000        000         0000000 
-
-electron  = require 'electron'
+{   
+$}        = require './tools/tools'
 keyname   = require './tools/keyname'
 elem      = require './tools/elem'
 pkg       = require '../package.json'
+electron  = require 'electron'
 clipboard = electron.clipboard
 ipc       = electron.ipcRenderer
 current   = 0
 buffers   = []
 encode    = require('html-entities').XmlEntities.encode
 
-$ = (id) -> document.getElementById id
 log = -> console.log ([].slice.call arguments, 0).join " "
 
 doPaste = -> ipc.send 'paste', current
@@ -26,11 +26,14 @@ doPaste = -> ipc.send 'paste', current
 # 000   000  000   0000000   000   000  0000000  000   0000000   000   000     000   
 
 highlight = (index) =>
-    $(current)?.classList.remove 'current'
+    cdiv = $('.current')
+    if cdiv?
+        cdiv.classList.remove 'current'
     current = Math.max 0, Math.min index, buffers.length-1
-    pre = $(current)
-    pre?.classList.add 'current'
-    pre?.scrollIntoViewIfNeeded()
+    line = $(current)
+    if line?
+        line.classList.add 'current'
+        line.scrollIntoViewIfNeeded()
     
 window.highlight = highlight
 window.onClick = (index) ->
@@ -57,7 +60,11 @@ loadBuffers = (buffs, index) ->
     
     buffers = buffs
     
-    $('main').innerHTML = ""
+    if buffers.length == 0
+        $('main').innerHTML = "<center><p class=\"info\">clipboard is empty</p></center>" 
+        return
+    
+    $('main').innerHTML = "<div id='buffer'></div>"
     
     i = 0
     for buf in buffers
@@ -72,12 +79,9 @@ loadBuffers = (buffs, index) ->
                 else
                     elem 'pre'
                 ]
-        $('main').insertBefore div, $('main').firstChild
+        $('buffer').insertBefore div, $('buffer').firstChild
         i += 1
-        
-    if buffers.length == 0
-        $('main').innerHTML = "<center><p class=\"info\">clipboard is empty</p></center>" 
-        
+                
     highlight index ? buffers.length-1
 
 setTitleBar = ->
