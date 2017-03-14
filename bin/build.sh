@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 cd `dirname $0`/..
 
-NAME=`sds -rp productName`
+NAME=`sds productName`
 
 killall $NAME
 killall $NAME

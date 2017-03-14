@@ -37,8 +37,10 @@ debug         = false
 # 000  000        000     
 # 000  000         0000000
 
-ipc.on 'getBuffers', (event)  -> event.returnValue = buffers
-ipc.on 'toggleMaximize',      -> if win?.isMaximized() then win?.unmaximize() else win?.maximize()
+ipc.on 'paste', (event, index) -> pasteIndex index 
+ipc.on 'del',   (event, index) -> deleteIndex index 
+ipc.on 'getBuffers', (event)   -> event.returnValue = buffers
+ipc.on 'toggleMaximize',       -> if win?.isMaximized() then win?.unmaximize() else win?.maximize()
 ipc.on 'closeWin',            -> win?.close()
 
 # 0000000    0000000  000000000  000  000   000  00000000
@@ -56,7 +58,6 @@ getActiveApp = ->
     """
     appName = childp.execSync "osascript #{script}"
     appName = String(appName).trim()    
-    # log 'getActiveApp', appName
     appName
 
 updateActiveApp = -> 
@@ -80,13 +81,11 @@ activateApp = ->
 #000   000  000        000        000   0000000   0000000   000   000
         
 saveAppIcon = (appName) ->
-    # log 'saveAppIcon', appName
     iconPath = "#{iconDir}/#{appName}.png"
     try 
         fs.accessSync iconPath, fs.R_OK
     catch
         png = appIconSync appName, iconDir, 128
-        # log "appIconSync #{iconPath} -> png: #{png}"
         appName = "clippo" if not png
     appName
 
@@ -160,9 +159,9 @@ copyIndex = (index) ->
 #000        000   000       000     000     000     
 #000        000   000  0000000      000     00000000
 
-ipc.on 'paste', (event, arg) => 
-    copyIndex arg
-    originApp = buffers.splice(arg, 1)[0].app
+pasteIndex = (index) ->
+    copyIndex index
+    originApp = buffers.splice(index, 1)[0].app
     win.close()
     paste = () ->
         childp.exec "osascript " + osascript """
@@ -176,12 +175,9 @@ ipc.on 'paste', (event, arg) =>
 #000   000  000       000    
 #0000000    00000000  0000000
 
-ipc.on 'del', (event, arg) =>
-    if arg == buffers.length-1
-        clipboard.clear()
-        copyIndex buffers.length-2
-    buffers.splice(arg, 1)
-    reload arg-1
+deleteIndex = (index) ->
+    buffers.splice(index, 1)
+    reload index-1
     
 #000   000  000  000   000  0000000     0000000   000   000
 #000 0 000  000  0000  000  000   000  000   000  000 0 000

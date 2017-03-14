@@ -88,7 +88,7 @@ setTitleBar = ->
     $('titlebar').ondblclick = => ipc.send 'toggleMaximize'
 
 setTitleBar()
-loadBuffers ipc.sendSync "getBuffers"
+loadBuffers ipc.sendSync 'getBuffers'
 
 window.onunload = ->
     document.onkeydown = null
@@ -108,4 +108,4 @@ document.onkeydown = (event) ->
         when 'home', 'page up'    then return highlight buffers.length-1
         when 'end',  'page down'  then return highlight 0
         when 'enter', 'command+v' then return doPaste()
-        when 'backspace', 'command+backspace', 'delete' then return ipc.send "del", current
+        when 'backspace', 'command+backspace', 'delete' then return ipc.send 'del', current
