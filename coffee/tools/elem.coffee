@@ -18,7 +18,7 @@ elem = (typ, opt) ->
 
     e = document.createElement typ
     
-    if opt.text? and _.isString opt.text
+    if opt.text? and (_.isString(opt.text) or _.isNumber(opt.text))
         e.textContent = opt.text
         delete opt.text
     

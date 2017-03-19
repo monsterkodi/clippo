@@ -9,10 +9,12 @@ chokidar      = require 'chokidar'
 childp        = require 'child_process'
 noon          = require 'noon'
 fs            = require 'fs'
+_             = require 'lodash'
 osascript     = require './tools/osascript'
 resolve       = require './tools/resolve'
 appIconSync   = require './tools/appiconsync'
 prefs         = require './tools/prefs'
+about         = require './tools/about'
 log           = require './tools/log'
 pkg           = require '../package.json'
 app           = electron.app
@@ -110,12 +112,24 @@ readPBjson = (path) ->
     saveAppIcon originApp ? currentApp
 
     if obj.image? 
+        
+        for b in buffers
+            if b.image? and b.image == obj.image
+                _.pull buffers, b
+                break
+        
         buffers.push 
             app:   currentApp
             image: obj.image
             count: obj.count
 
     if obj.text? 
+        
+        for b in buffers
+            if b.text? and b.text == obj.text
+                _.pull buffers, b
+                break
+        
         buffers.push 
             app:   currentApp
             text:  obj.text
@@ -176,7 +190,7 @@ pasteIndex = (index) ->
 #0000000    00000000  0000000
 
 deleteIndex = (index) ->
-    buffers.splice(index, 1)
+    buffers.splice index, 1 
     reload index-1
     
 #000   000  000  000   000  0000000     0000000   000   000
@@ -214,7 +228,7 @@ createWindow = ->
     bounds = prefs.get 'bounds'
     win.setBounds bounds if bounds?
         
-    win.loadURL "file://#{__dirname}/../index.html"
+    win.loadURL "file://#{__dirname}/index.html"
     win.webContents.openDevTools() if debug
     win.on 'ready-to-show', -> win.show()
     win.on 'closed', -> win = null
@@ -227,6 +241,12 @@ createWindow = ->
 saveBounds = ->
     if win?
         prefs.set 'bounds', win.getBounds()
+
+showAbout = ->
+    about 
+        img:        "#{__dirname}/../img/about.png"
+        color:      "#080808"
+        background: "#282828"
     
 reload = (index=0) -> win?.webContents.send 'loadBuffers', buffers, index
     
@@ -237,7 +257,7 @@ clearBuffer = ->
         
 saveBuffer = ->
     json = JSON.stringify buffers.slice(- prefs.get('maxBuffers', 50)), null, '    '
-    fs.writeFile "#{app.getPath('userData')}/clippo-buffers.json", json, encoding:'utf8' 
+    fs.writeFile "#{app.getPath('userData')}/clippo-buffers.json", json, encoding:'utf8', -> 
     
 readBuffer = ->
     buffers = [] 
@@ -272,7 +292,8 @@ app.on 'ready', ->
         label: app.getName()
         submenu: [
             label: "About #{pkg.name}"
-            click: -> clipboard.writeText "#{pkg.name} v#{pkg.version}"
+            accelerator: 'Command+.'
+            click: -> showAbout()
         ,            
             label: 'Clear Buffer'
             accelerator: 'Command+K'

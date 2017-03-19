@@ -70,7 +70,7 @@ loadBuffers = (buffs, index) ->
     for buf in buffers
         div = elem id: i, class: 'line-div', onClick: "window.onClick(#{i});", child:
             elem 'span', class: 'line-span', children: [
-                elem 'img', onClick: "window.highlight(#{i});", class: 'appicon', src: "icons/#{buf.app}.png"
+                elem 'img', onClick: "window.highlight(#{i});", class: 'appicon', src: "../icons/#{buf.app}.png"
                 if buf.image?
                     elem 'img', src: "data:image/png;base64,#{buf.image}"
                 else if buf.text?
