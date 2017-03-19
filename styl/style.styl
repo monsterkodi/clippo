@@ -6,7 +6,7 @@
 // 0000000      000        000     0000000
 
 frameWidth     = 6px
-frameColor     = #222
+frameColor     = #333
 frameBorder    = frameWidth solid frameColor
 titlebarHeight = 22px
 fontMono       = "Menlo", "Cousine", "Liberation Mono", "Andale Mono", monospace
@@ -30,7 +30,7 @@ fill-abs()
 body
     fill-abs()
     margin              0
-    background          #111
+    background          #222
     color               #fff
     overflow            hidden
     font-family         fontMono
@@ -87,7 +87,7 @@ body
     overflow            auto
     pointer-events      auto
     -webkit-user-select text
-    background          #121212
+    background          #222
     color               #aaa
 
 #buffer
@@ -135,6 +135,9 @@ pre
     border                  1px solid transparent
     &:hover
         border              1px solid #000
+
+.image
+    max-width               85%
                 
 .current 
     background              #000

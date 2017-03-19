@@ -72,7 +72,7 @@ loadBuffers = (buffs, index) ->
             elem 'span', class: 'line-span', children: [
                 elem 'img', onClick: "window.highlight(#{i});", class: 'appicon', src: "../icons/#{buf.app}.png"
                 if buf.image?
-                    elem 'img', src: "data:image/png;base64,#{buf.image}"
+                    elem 'img', src: "data:image/png;base64,#{buf.image}", class: 'image'
                 else if buf.text?
                     encl = ( encode(l) for l in buf.text.split "\n" )
                     elem 'pre', html: encl.join "<br>" 

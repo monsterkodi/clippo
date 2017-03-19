@@ -8,7 +8,8 @@ electron      = require 'electron'
 chokidar      = require 'chokidar'
 childp        = require 'child_process'
 noon          = require 'noon'
-fs            = require 'fs'
+path          = require 'path'
+fs            = require 'fs-extra'
 _             = require 'lodash'
 osascript     = require './tools/osascript'
 resolve       = require './tools/resolve'
@@ -380,6 +381,14 @@ app.on 'ready', ->
             fs.mkdirSync iconDir
         catch
             log "can't create icon directory #{iconDir}"
+
+    try
+        fs.accessSync path.join(iconDir, 'clippo.png'), fs.R_OK
+    catch    
+        try
+            fs.copySync "#{__dirname}/../img/clippo.png", path.join(iconDir, 'clippo.png')
+        catch err
+            log "can't copy clippo icon: #{err}"
     
     watchClipboard()
     

@@ -2,5 +2,3 @@
 
 ![clippo](img/shot.png)
 
-
-
