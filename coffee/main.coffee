@@ -25,8 +25,9 @@ Menu          = electron.Menu
 clipboard     = electron.clipboard
 ipc           = electron.ipcMain
 nativeImage   = electron.nativeImage
-win           = undefined
-tray          = undefined
+sel           = null
+win           = null
+tray          = null
 buffers       = []
 iconDir       = ""
 activeApp     = ""
@@ -42,6 +43,7 @@ debug         = false
 
 ipc.on 'paste', (event, index) -> pasteIndex index 
 ipc.on 'del',   (event, index) -> deleteIndex index 
+ipc.on 'clearBuffer',          -> clearBuffer()
 ipc.on 'getBuffers', (event)   -> event.returnValue = buffers
 ipc.on 'toggleMaximize',       -> if win?.isMaximized() then win?.unmaximize() else win?.maximize()
 ipc.on 'closeWin',             -> win?.close()
@@ -233,15 +235,15 @@ createWindow = ->
     win.webContents.openDevTools() if debug
     win.on 'ready-to-show', -> win.show()
     win.on 'closed', -> win = null
+    win.on 'resize', saveBounds
+    win.on 'move', saveBounds
     win.on 'close',  ->
         activateApp()
         app.dock.hide()
     app.dock.show()
     win
 
-saveBounds = ->
-    if win?
-        prefs.set 'bounds', win.getBounds()
+saveBounds = -> if win? then prefs.set 'bounds', win.getBounds()
 
 showAbout = ->
     about 
@@ -257,17 +259,50 @@ clearBuffer = ->
     reload()
         
 saveBuffer = ->
-    json = JSON.stringify buffers.slice(- prefs.get('maxBuffers', 50)), null, '    '
-    fs.writeFile "#{app.getPath('userData')}/clippo-buffers.json", json, encoding:'utf8', -> 
+    noon.save "#{app.getPath('userData')}/clippo-buffers.noon", buffers.slice(- prefs.get('maxBuffers', 50))
     
 readBuffer = ->
-    buffers = [] 
     try
-        buffers = JSON.parse fs.readFileSync "#{app.getPath('userData')}/clippo-buffers.json", encoding:'utf8'
+        buffers = noon.load "#{app.getPath('userData')}/clippo-buffers.noon"
+        buffers = buffers ? []
     catch
-        return
+        buffers = [] 
         
 app.on 'window-all-closed', (event) -> event.preventDefault()
+
+#  0000000   00000000   00000000    0000000  00000000  000      
+# 000   000  000   000  000   000  000       000       000      
+# 000000000  00000000   00000000   0000000   0000000   000      
+# 000   000  000        000             000  000       000      
+# 000   000  000        000        0000000   00000000  0000000  
+
+showAppSelector = ->
+    return if sel?
+    sel = new BrowserWindow
+        width:           300
+        height:          300
+        center:          true
+        alwaysOnTop:     true
+        movable:         true
+        backgroundColor: '#181818'
+        frame:           false
+        resizable:       false
+        maximizable:     false
+        minimizable:     false
+        fullscreen:      false
+        show:            false
+        
+    bounds = prefs.get 'appSelector:bounds'
+    sel.setBounds bounds if bounds?
+    sel.loadURL "file://#{__dirname}/appsel.html"
+    sel.on 'closed', -> sel = null
+    sel.on 'resize', -> prefs.set 'appSelector:bounds', sel.getBounds()
+    sel.on 'move',   -> prefs.set 'appSelector:bounds', sel.getBounds()
+    sel.on 'close',  ->
+    sel.on 'ready-to-show', -> 
+        sel.webContents.send 'setWinID', sel.id
+        sel.show()
+    sel
 
 #00000000   00000000   0000000   0000000    000   000
 #000   000  000       000   000  000   000   000 000 
@@ -365,11 +400,14 @@ app.on 'ready', ->
         ]
     ]
         
-    prefs.init "#{app.getPath('userData')}/clippo.json",
+    prefs.init "#{app.getPath('userData')}/clippo.noon",
         maxBuffers: 50
         shortcut: 'Command+Alt+V'
+        appSelector:
+            shortcut: 'Command+F1'
 
     electron.globalShortcut.register prefs.get('shortcut'), showWindow
+    electron.globalShortcut.register prefs.get('appSelector:shortcut'), showAppSelector
 
     readBuffer()
 

@@ -1,0 +1,65 @@
+
+// 0000000     0000000   00000000   000   000  
+// 000   000  000   000  000   000  000  000   
+// 000   000  000000000  0000000    0000000    
+// 000   000  000   000  000   000  000  000   
+// 0000000    000   000  000   000  000   000  
+
+frameWidth  = 6px
+frameColor  = #333
+frameBorder = frameWidth solid frameColor
+
+body
+    background          #222
+    color               #fff
+
+.titlebar
+    background          #333
+    color               #aaa
+
+.titlebarDot
+    color               #444
+
+.titlebarVersion
+    color               #555
+
+#main
+    border-left         frameBorder
+    border-right        frameBorder
+    border-bottom       frameBorder
+    
+.main
+    background          #222
+    color               #aaa
+
+pre
+    background          #000
+
+.current 
+    background          #000
+    & pre
+        color           #fff
+        
+.current .image
+.image:hover
+    border              1px solid #fff
+                
+.info 
+    color               #888
+    
+//  0000000   0000000  00000000    0000000   000      000     
+// 000       000       000   000  000   000  000      000     
+// 0000000   000       0000000    000   000  000      000     
+//      000  000       000   000  000   000  000      000     
+// 0000000    0000000  000   000   0000000   0000000  0000000 
+
+::-webkit-scrollbar-corner
+    background-color        #222
+
+::-webkit-scrollbar-thumb
+    background-color        #2d2d2d
+    
+::-webkit-scrollbar-thumb:hover
+    background-color        #b00
+
+    

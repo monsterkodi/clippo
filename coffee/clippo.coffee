@@ -3,19 +3,21 @@
 # 000       000      000  00000000   00000000   000   000
 # 000       000      000  000        000        000   000
 #  0000000  0000000  000  000        000         0000000 
-{   
+{
+last,
 $}        = require './tools/tools'
 keyname   = require './tools/keyname'
+prefs     = require './tools/prefs'
 elem      = require './tools/elem'
+log       = require './tools/log'
 pkg       = require '../package.json'
+path      = require 'path'
 electron  = require 'electron'
 clipboard = electron.clipboard
 ipc       = electron.ipcRenderer
 current   = 0
 buffers   = []
 encode    = require('html-entities').XmlEntities.encode
-
-log = -> console.log ([].slice.call arguments, 0).join " "
 
 doPaste = -> ipc.send 'paste', current
 
@@ -91,10 +93,32 @@ setTitleBar = ->
     $('titlebar').innerHTML = html
     $('titlebar').ondblclick = => ipc.send 'toggleMaximize'
 
-setTitleBar()
-loadBuffers ipc.sendSync 'getBuffers'
-
 window.onunload = -> document.onkeydown = null
+
+#  0000000  000000000  000   000  000      00000000  
+# 000          000      000 000   000      000       
+# 0000000      000       00000    000      0000000   
+#      000     000        000     000      000       
+# 0000000      000        000     0000000  00000000  
+
+toggleStyle = ->
+    link =$ 'style-link' 
+    currentScheme = last link.href.split('/')
+    schemes = ['dark.css', 'bright.css']
+    nextSchemeIndex = ( schemes.indexOf(currentScheme) + 1) % schemes.length
+    nextScheme = schemes[nextSchemeIndex]
+    ipc.send 'setScheme', path.basename nextScheme, '.css'
+    prefs.set 'scheme', nextScheme
+    setScheme nextScheme
+    
+setScheme = (scheme) ->
+    link =$ 'style-link' 
+    newlink = elem 'link', 
+        rel:  'stylesheet'
+        type: 'text/css'
+        href: 'css/'+scheme
+        id:   'style-link'
+    link.parentNode.replaceChild newlink, link
 
 # 000   000  00000000  000   000
 # 000  000   000        000 000 
@@ -105,6 +129,8 @@ window.onunload = -> document.onkeydown = null
 document.onkeydown = (event) ->
     key = keyname.ofEvent event
     switch key
+        when 'k'                  then return ipc.send 'clearBuffer'
+        when 'i'                  then return toggleStyle()
         when 'esc'                then return ipc.send 'closeWin'
         when 'down', 'right'      then return highlight current-1
         when 'up'  , 'left'       then return highlight current+1
@@ -112,3 +138,8 @@ document.onkeydown = (event) ->
         when 'end',  'page down'  then return highlight 0
         when 'enter', 'command+v' then return doPaste()
         when 'backspace', 'command+backspace', 'delete' then return ipc.send 'del', current
+
+prefs.init "#{electron.remote.app.getPath('userData')}/#{pkg.productName}.noon"
+setScheme prefs.get 'scheme', 'dark.css'
+setTitleBar()
+loadBuffers ipc.sendSync 'getBuffers'
