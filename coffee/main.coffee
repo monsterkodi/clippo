@@ -270,40 +270,6 @@ readBuffer = ->
         
 app.on 'window-all-closed', (event) -> event.preventDefault()
 
-#  0000000   00000000   00000000    0000000  00000000  000      
-# 000   000  000   000  000   000  000       000       000      
-# 000000000  00000000   00000000   0000000   0000000   000      
-# 000   000  000        000             000  000       000      
-# 000   000  000        000        0000000   00000000  0000000  
-
-showAppSelector = ->
-    return if sel?
-    sel = new BrowserWindow
-        width:           300
-        height:          300
-        center:          true
-        alwaysOnTop:     true
-        movable:         true
-        backgroundColor: '#181818'
-        frame:           false
-        resizable:       false
-        maximizable:     false
-        minimizable:     false
-        fullscreen:      false
-        show:            false
-        
-    bounds = prefs.get 'appSelector:bounds'
-    sel.setBounds bounds if bounds?
-    sel.loadURL "file://#{__dirname}/appsel.html"
-    sel.on 'closed', -> sel = null
-    sel.on 'resize', -> prefs.set 'appSelector:bounds', sel.getBounds()
-    sel.on 'move',   -> prefs.set 'appSelector:bounds', sel.getBounds()
-    sel.on 'close',  ->
-    sel.on 'ready-to-show', -> 
-        sel.webContents.send 'setWinID', sel.id
-        sel.show()
-    sel
-
 #00000000   00000000   0000000   0000000    000   000
 #000   000  000       000   000  000   000   000 000 
 #0000000    0000000   000000000  000   000    00000  
@@ -403,11 +369,8 @@ app.on 'ready', ->
     prefs.init "#{app.getPath('userData')}/clippo.noon",
         maxBuffers: 50
         shortcut: 'Command+Alt+V'
-        appSelector:
-            shortcut: 'Command+F1'
 
     electron.globalShortcut.register prefs.get('shortcut'), showWindow
-    electron.globalShortcut.register prefs.get('appSelector:shortcut'), showAppSelector
 
     readBuffer()
 
