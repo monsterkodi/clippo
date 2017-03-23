@@ -3,7 +3,14 @@
 # 000000000  000000000  000  000 0 000
 # 000 0 000  000   000  000  000  0000
 # 000   000  000   000  000  000   000
-
+{
+osascript,
+resolve,  
+prefs,    
+about,    
+log,      
+}             = require 'kxk'
+appIconSync   = require './appiconsync'
 electron      = require 'electron'
 chokidar      = require 'chokidar'
 childp        = require 'child_process'
@@ -11,12 +18,6 @@ noon          = require 'noon'
 path          = require 'path'
 fs            = require 'fs-extra'
 _             = require 'lodash'
-osascript     = require './tools/osascript'
-resolve       = require './tools/resolve'
-appIconSync   = require './tools/appiconsync'
-prefs         = require './tools/prefs'
-about         = require './tools/about'
-log           = require './tools/log'
 pkg           = require '../package.json'
 app           = electron.app
 BrowserWindow = electron.BrowserWindow
@@ -250,6 +251,7 @@ showAbout = ->
         img:        "#{__dirname}/../img/about.png"
         color:      "#080808"
         background: "#282828"
+        pkg:        pkg
     
 reload = (index=0) -> win?.webContents.send 'loadBuffers', buffers, index
     
@@ -366,7 +368,7 @@ app.on 'ready', ->
         ]
     ]
         
-    prefs.init "#{app.getPath('userData')}/clippo.noon",
+    prefs.init 
         maxBuffers: 50
         shortcut: 'Command+Alt+V'
 

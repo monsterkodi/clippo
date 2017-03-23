@@ -3,12 +3,13 @@
 #000000000  00000000   00000000   000  000       000   000  000 0 000  0000000     00000    000 0 000  000     
 #000   000  000        000        000  000       000   000  000  0000       000     000     000  0000  000     
 #000   000  000        000        000   0000000   0000000   000   000  0000000      000     000   000   0000000
-
+{
+resolve
+}       = require 'kxk'
 fs      = require 'fs'
 path    = require 'path'
 plist   = require 'simple-plist'
 childp  = require 'child_process'
-resolve = require './resolve'
 
 module.exports = (appName, outDir=".", size=1024) ->
 
@@ -34,8 +35,5 @@ module.exports = (appName, outDir=".", size=1024) ->
                 childp.execSync "/usr/bin/sips -Z #{size} -s format png #{icnsPath} --out #{pngPath}"
                 fs.accessSync pngPath, fs.R_OK
                 return pngPath
-            # else
-                # console.log "no icon in plist #{infoPath}?", obj
         catch err
-            # console.log "[ERROR] appIconSync: #{absPath} #{err}"
             continue

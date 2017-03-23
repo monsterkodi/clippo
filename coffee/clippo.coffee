@@ -4,12 +4,12 @@
 # 000       000      000  000        000        000   000
 #  0000000  0000000  000  000        000         0000000 
 {
+log,
 last,
-$}        = require './tools/tools'
-keyname   = require './tools/keyname'
-prefs     = require './tools/prefs'
-elem      = require './tools/elem'
-log       = require './tools/log'
+elem,
+prefs,
+keyinfo,
+$}        = require 'kxk'
 pkg       = require '../package.json'
 path      = require 'path'
 electron  = require 'electron'
@@ -127,7 +127,9 @@ setScheme = (scheme) ->
 # 000   000  00000000     000   
 
 document.onkeydown = (event) ->
-    key = keyname.ofEvent event
+    
+    {mod, key, combo} = keyinfo.forEvent event
+    
     switch key
         when 'k'                  then return ipc.send 'clearBuffer'
         when 'i'                  then return toggleStyle()
@@ -136,10 +138,12 @@ document.onkeydown = (event) ->
         when 'up'  , 'left'       then return highlight current+1
         when 'home', 'page up'    then return highlight buffers.length-1
         when 'end',  'page down'  then return highlight 0
+        
+    switch combo
         when 'enter', 'command+v' then return doPaste()
         when 'backspace', 'command+backspace', 'delete' then return ipc.send 'del', current
 
-prefs.init "#{electron.remote.app.getPath('userData')}/#{pkg.productName}.noon"
+prefs.init()
 setScheme prefs.get 'scheme', 'dark.css'
 setTitleBar()
 loadBuffers ipc.sendSync 'getBuffers'
