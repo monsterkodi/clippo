@@ -178,8 +178,8 @@ copyIndex = (index) ->
 #000        000   000  0000000      000     00000000
 
 pasteIndex = (index) ->
-    originApp = buffers.splice(index, 1)[0].app
     copyIndex index
+    originApp = buffers.splice(index, 1)[0].app
     win.close()
     paste = () ->
         childp.exec "osascript " + osascript """

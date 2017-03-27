@@ -4,6 +4,7 @@
 # 000       000      000  000        000        000   000
 #  0000000  0000000  000  000        000         0000000 
 {
+encodePath,
 keyinfo,
 scheme,
 prefs,
@@ -62,18 +63,20 @@ ipc.on "loadBuffers", (event, buffs, index) -> loadBuffers buffs, index
 loadBuffers = (buffs, index) ->
     
     buffers = buffs
-    
+        
     if buffers.length == 0
         $('main').innerHTML = "<center><p class=\"info\">clipboard is empty</p></center>" 
         return
-    
+
+    iconDir = encodePath path.join electron.remote.app.getPath('userData'), 'icons'
+        
     $('main').innerHTML = "<div id='buffer'></div>"
     
     i = 0
     for buf in buffers
         div = elem id: i, class: 'line-div', onClick: "window.onClick(#{i});", child:
             elem 'span', class: 'line-span', children: [
-                elem 'img', onClick: "window.highlight(#{i});", class: 'appicon', src: "../icons/#{buf.app}.png"
+                elem 'img', onClick: "window.highlight(#{i});", class: 'appicon', src: "#{iconDir}/#{buf.app}.png"
                 if buf.image?
                     elem 'img', src: "data:image/png;base64,#{buf.image}", class: 'image'
                 else if buf.text?

@@ -4,6 +4,7 @@
 #000   000  000        000        000  000       000   000  000  0000       000     000     000  0000  000     
 #000   000  000        000        000   0000000   0000000   000   000  0000000      000     000   000   0000000
 {
+escapePath,
 resolve
 }       = require 'kxk'
 fs      = require 'fs'
@@ -32,7 +33,7 @@ module.exports = (appName, outDir=".", size=1024) ->
                 icnsPath += ".icns" if not icnsPath.endsWith '.icns'
                 fs.accessSync icnsPath, fs.R_OK 
                 pngPath = resolve path.join outDir, path.basename(appName, path.extname(appName)) + ".png"
-                childp.execSync "/usr/bin/sips -Z #{size} -s format png #{icnsPath} --out #{pngPath}"
+                childp.execSync "/usr/bin/sips -Z #{size} -s format png \"#{escapePath icnsPath}\" --out \"#{escapePath pngPath}\""
                 fs.accessSync pngPath, fs.R_OK
                 return pngPath
         catch err
