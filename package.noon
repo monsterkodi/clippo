@@ -1,6 +1,6 @@
 name            clippo
 productName     clippo
-version         1.4.1
+version         1.4.2
 description     clipboard tool
 main            js/main.js
 repository

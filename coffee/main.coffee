@@ -123,7 +123,7 @@ readPBjson = (path) ->
                 break
         
         buffers.push 
-            app:   currentApp
+            app:   originApp ? currentApp
             image: obj.image
             count: obj.count
 
@@ -135,7 +135,7 @@ readPBjson = (path) ->
                 break
         
         buffers.push 
-            app:   currentApp
+            app:   originApp ? currentApp
             text:  obj.text
             count: obj.count
 
@@ -178,8 +178,8 @@ copyIndex = (index) ->
 #000        000   000  0000000      000     00000000
 
 pasteIndex = (index) ->
-    copyIndex index
     originApp = buffers.splice(index, 1)[0].app
+    copyIndex index
     win.close()
     paste = () ->
         childp.exec "osascript " + osascript """
@@ -261,11 +261,11 @@ clearBuffer = ->
     reload()
         
 saveBuffer = ->
-    noon.save "#{app.getPath('userData')}/clippo-buffers.noon", buffers.slice(- prefs.get('maxBuffers', 50))
+    noon.save "#{app.getPath('userData')}/buffers.noon", buffers.slice(- prefs.get('maxBuffers', 50))
     
 readBuffer = ->
     try
-        buffers = noon.load "#{app.getPath('userData')}/clippo-buffers.noon"
+        buffers = noon.load "#{app.getPath('userData')}/buffers.noon"
         buffers = buffers ? []
     catch
         buffers = [] 
@@ -279,7 +279,11 @@ app.on 'window-all-closed', (event) -> event.preventDefault()
 #000   000  00000000  000   000  0000000       000   
 
 app.on 'ready', -> 
-    
+
+    if app.makeSingleInstance showWindow 
+        app.quit()
+        return
+        
     tray = new Tray "#{__dirname}/../img/menu.png"
     tray.on 'click', toggleWindow
     app.dock.hide() if app.dock
@@ -376,20 +380,14 @@ app.on 'ready', ->
 
     readBuffer()
 
-    iconDir = resolve "#{__dirname}/../icons"    
-    try
-        fs.accessSync iconDir, fs.R_OK
-    catch
-        try
-            fs.mkdirSync iconDir
-        catch
-            log "can't create icon directory #{iconDir}"
+    iconDir = resolve "#{app.getPath('userData')}/icons"    
+    fs.ensureDirSync iconDir
 
     try
         fs.accessSync path.join(iconDir, 'clippo.png'), fs.R_OK
     catch    
         try
-            fs.copySync "#{__dirname}/../img/clippo.png", path.join(iconDir, 'clippo.png')
+            fs.copySync "#{__dirname}/../img/clippo.png", path.join iconDir, 'clippo.png' 
         catch err
             log "can't copy clippo icon: #{err}"
     

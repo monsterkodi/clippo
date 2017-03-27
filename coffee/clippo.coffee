@@ -4,11 +4,12 @@
 # 000       000      000  000        000        000   000
 #  0000000  0000000  000  000        000         0000000 
 {
-log,
-last,
-elem,
-prefs,
 keyinfo,
+scheme,
+prefs,
+elem,
+last,
+log,
 $}        = require 'kxk'
 pkg       = require '../package.json'
 path      = require 'path'
@@ -95,31 +96,6 @@ setTitleBar = ->
 
 window.onunload = -> document.onkeydown = null
 
-#  0000000  000000000  000   000  000      00000000  
-# 000          000      000 000   000      000       
-# 0000000      000       00000    000      0000000   
-#      000     000        000     000      000       
-# 0000000      000        000     0000000  00000000  
-
-toggleStyle = ->
-    link =$ 'style-link' 
-    currentScheme = last link.href.split('/')
-    schemes = ['dark.css', 'bright.css']
-    nextSchemeIndex = ( schemes.indexOf(currentScheme) + 1) % schemes.length
-    nextScheme = schemes[nextSchemeIndex]
-    ipc.send 'setScheme', path.basename nextScheme, '.css'
-    prefs.set 'scheme', nextScheme
-    setScheme nextScheme
-    
-setScheme = (scheme) ->
-    link =$ 'style-link' 
-    newlink = elem 'link', 
-        rel:  'stylesheet'
-        type: 'text/css'
-        href: 'css/'+scheme
-        id:   'style-link'
-    link.parentNode.replaceChild newlink, link
-
 # 000   000  00000000  000   000
 # 000  000   000        000 000 
 # 0000000    0000000     00000  
@@ -130,20 +106,18 @@ document.onkeydown = (event) ->
     
     {mod, key, combo} = keyinfo.forEvent event
     
-    switch key
-        when 'k'                  then return ipc.send 'clearBuffer'
-        when 'i'                  then return toggleStyle()
+    switch combo
+        when 'k', 'command+k'     then return ipc.send 'clearBuffer'
+        when 'i', 'command+i'     then return scheme.toggle()
         when 'esc'                then return ipc.send 'closeWin'
         when 'down', 'right'      then return highlight current-1
         when 'up'  , 'left'       then return highlight current+1
         when 'home', 'page up'    then return highlight buffers.length-1
         when 'end',  'page down'  then return highlight 0
-        
-    switch combo
         when 'enter', 'command+v' then return doPaste()
         when 'backspace', 'command+backspace', 'delete' then return ipc.send 'del', current
 
 prefs.init()
-setScheme prefs.get 'scheme', 'dark.css'
+scheme.set prefs.get 'scheme', 'dark'
 setTitleBar()
 loadBuffers ipc.sendSync 'getBuffers'
