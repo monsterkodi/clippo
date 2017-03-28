@@ -8,6 +8,7 @@ encodePath,
 keyinfo,
 scheme,
 prefs,
+post,
 elem,
 last,
 log,
@@ -60,12 +61,15 @@ $('main').addEventListener "mouseover", (event) ->
 
 ipc.on "loadBuffers", (event, buffs, index) -> loadBuffers buffs, index
 
+post.on 'schemeChanged', -> loadBuffers buffers, current
+
 loadBuffers = (buffs, index) ->
     
     buffers = buffs
         
     if buffers.length == 0
-        $('main').innerHTML = "<center><p class=\"info\">clipboard is empty</p></center>" 
+        s = prefs.get 'scheme', 'dark'
+        $('main').innerHTML = "<center><img class='info' src=\"#{__dirname}/../img/empty_#{s}.png\"></center>" 
         return
 
     iconDir = encodePath path.join electron.remote.app.getPath('userData'), 'icons'

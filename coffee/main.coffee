@@ -227,7 +227,7 @@ createWindow = ->
         maximizable:     true
         minimizable:     true
         fullscreen:      false
-        show:            true
+        show:            false
         
     bounds = prefs.get 'bounds'
     win.setBounds bounds if bounds?
@@ -247,10 +247,12 @@ createWindow = ->
 saveBounds = -> if win? then prefs.set 'bounds', win.getBounds()
 
 showAbout = ->
+    dark = 'dark' == prefs.get 'scheme', 'dark'
     about 
         img:        "#{__dirname}/../img/about.png"
-        color:      "#080808"
-        background: "#282828"
+        color:      dark and '#383838' or '#ddd'
+        background: dark and '#282828' or '#fff'
+        highlight:  dark and '#fff'    or '#000'
         pkg:        pkg
     
 reload = (index=0) -> win?.webContents.send 'loadBuffers', buffers, index
@@ -279,10 +281,6 @@ app.on 'window-all-closed', (event) -> event.preventDefault()
 #000   000  00000000  000   000  0000000       000   
 
 app.on 'ready', -> 
-
-    if app.makeSingleInstance showWindow 
-        app.quit()
-        return
         
     tray = new Tray "#{__dirname}/../img/menu.png"
     tray.on 'click', toggleWindow
@@ -392,4 +390,7 @@ app.on 'ready', ->
             log "can't copy clippo icon: #{err}"
     
     watchClipboard()
-    
+
+if app.makeSingleInstance showWindow 
+    app.quit()
+    return
