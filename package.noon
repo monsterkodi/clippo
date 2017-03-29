@@ -23,7 +23,7 @@ dependencies
                 fs-extra        ^2.1.2
                 html-entities   ^1.2.0
                 keycode         ^2.1.8
-                kxk             ^0.4.3
+                kxk             ^0.5.3
                 lodash          ^4.17.4
                 noon            >=1.0.14
                 opener          ^1.4.3
