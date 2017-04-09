@@ -10,7 +10,6 @@ scheme,
 prefs,
 post,
 elem,
-last,
 log,
 $}        = require 'kxk'
 pkg       = require '../package.json'
