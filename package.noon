@@ -1,11 +1,14 @@
 name            clippo
 productName     clippo
-version         1.6.0
+version         1.7.0
 description     clipboard tool
 main            js/main.js
 repository
                 type  git
                 url   git+https://github.com/monsterkodi/clippo.git
+scripts
+                build   ./bin/build.sh
+                win     bash ./bin/buildwin.sh
 keywords
                 copy
                 paste
@@ -20,9 +23,8 @@ dependencies
                 chokidar        ^1.6.1
                 clipboard-watch  ^1.0.2
                 html-entities   ^1.2.0
-                kxk             ^0.31.0
+                kxk             ^0.34.0
                 opener          ^1.4.3
-                walkdir         0.0.12
 optionalDependencies
                 simple-plist    ^0.2.1
                 active-win      ^3.0.0

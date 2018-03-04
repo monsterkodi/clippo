@@ -1,5 +1,5 @@
 ignore      
-    /.*-darwin-x64/
+    /.*-x64/
     
 pug     . ext html . replace .. pug/     js/
 styl    . ext css  . replace .. styl/    js/css/

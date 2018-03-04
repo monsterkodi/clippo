@@ -6,10 +6,12 @@
 
 { osascript, resolve, prefs, slash, about, noon, childp, log, fs, _ } = require 'kxk'
 
-# appIconSync   = require './appiconsync'
+if not slash.win()
+    appIconSync = require './appiconsync'
 electron      = require 'electron'
 chokidar      = require 'chokidar'
 pkg           = require '../package.json'
+
 app           = electron.app
 BrowserWindow = electron.BrowserWindow
 Tray          = electron.Tray
@@ -397,6 +399,8 @@ app.on 'ready', ->
             log "can't copy clippo icon: #{err}"
     
     watchClipboard()
+    if slash.win()
+        showWindow()
 
 if app.makeSingleInstance showWindow 
     app.quit()
