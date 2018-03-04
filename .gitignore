@@ -5,8 +5,7 @@ Icon?
 package.json
 bin/*.json
 *.dmg
-*-darwin-x64
+*-x64
 css
 js
 *.html
-yarn.lock

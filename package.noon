@@ -1,14 +1,12 @@
 name            clippo
 productName     clippo
-version         1.5.0
+version         1.6.0
 description     clipboard tool
 main            js/main.js
 repository
                 type  git
                 url   git+https://github.com/monsterkodi/clippo.git
 keywords
-                mac
-                menu-bar
                 copy
                 paste
                 clipboard
@@ -20,16 +18,15 @@ bugs
                 url  https://github.com/monsterkodi/clippo/issues
 dependencies
                 chokidar        ^1.6.1
-                fs-extra        ^2.1.2
+                clipboard-watch  ^1.0.2
                 html-entities   ^1.2.0
-                keycode         ^2.1.8
-                kxk             ^0.8.0
-                lodash          ^4.17.4
-                noon            >=1.0.14
+                kxk             ^0.31.0
                 opener          ^1.4.3
+                walkdir         0.0.12
+optionalDependencies
                 simple-plist    ^0.2.1
-                walkdir         ^0.0.11
-                write-file-atomic  ^1.3.1
+                active-win      ^3.0.0
+                win-icon-extractor  ^1.0.4
 devDependencies
                 appdmg          ^0.4.5
                 electron        ^1.6.2

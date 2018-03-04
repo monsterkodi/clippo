@@ -3,21 +3,12 @@
 # 000000000  000000000  000  000 0 000
 # 000 0 000  000   000  000  000  0000
 # 000   000  000   000  000  000   000
-{
-osascript,
-resolve,  
-prefs,    
-about,    
-log,      
-}             = require 'kxk'
-appIconSync   = require './appiconsync'
+
+{ osascript, resolve, prefs, slash, about, noon, childp, log, fs, _ } = require 'kxk'
+
+# appIconSync   = require './appiconsync'
 electron      = require 'electron'
 chokidar      = require 'chokidar'
-childp        = require 'child_process'
-noon          = require 'noon'
-path          = require 'path'
-fs            = require 'fs-extra'
-_             = require 'lodash'
 pkg           = require '../package.json'
 app           = electron.app
 BrowserWindow = electron.BrowserWindow
@@ -56,6 +47,7 @@ ipc.on 'closeWin',             -> win?.close()
 #000   000   0000000     000     000      0      00000000
 
 getActiveApp = ->
+    return if slash.win()
     script = osascript """
     tell application "System Events"
         set n to name of first application process whose frontmost is true
@@ -68,10 +60,11 @@ getActiveApp = ->
 
 updateActiveApp = -> 
     appName = getActiveApp()
-    if appName != app.getName()
+    if appName and appName != app.getName()
         activeApp = appName
 
 activateApp = ->
+    return if slash.win()
     if activeApp.length
         try
             childp.execSync "osascript " + osascript """
@@ -87,10 +80,9 @@ activateApp = ->
 #000   000  000        000        000   0000000   0000000   000   000
         
 saveAppIcon = (appName) ->
+    
     iconPath = "#{iconDir}/#{appName}.png"
-    try 
-        fs.accessSync iconPath, fs.R_OK
-    catch
+    if not slash.isFile iconPath
         png = appIconSync appName, iconDir, 128
         appName = "clippo" if not png
     appName
@@ -148,13 +140,38 @@ readPBjson = (path) ->
 
 watchClipboard = ->
 
-    clippoWatch = childp.spawn "#{__dirname}/../bin/clippo-watch", [], 
-        cwd: "#{__dirname}/../bin"
-        detached: false
-
-    watcher = chokidar.watch "#{__dirname}/../bin/pb.json", persistent: true
-    watcher.on 'add',    (path) => readPBjson path
-    watcher.on 'change', (path) => readPBjson path
+    if slash.win()
+        cw = require 'clipboard-watch'
+        cw.watcher ->
+            activeWin = require 'active-win'
+            appName = 'clippo'
+            
+            winInfo = activeWin.sync()
+            if winInfo?.owner?
+                appName = slash.base winInfo.owner.name
+                iconPath = "#{iconDir}/#{appName}.png"
+                if not slash.isFile iconPath
+                    extractIcon = require 'win-icon-extractor'
+                    extractIcon(winInfo.owner.path).then (result) ->
+                        result = result.slice 'data:image/png;base64,'.length
+                        try
+                            fs.writeFileSync iconPath, result, encoding: 'base64'
+                        catch err
+                            log "write icon #{iconPath} failed"
+                
+            buffers.push 
+                app:   appName
+                text:  clipboard.readText()
+                count: buffers.length
+            reload buffers.length-1
+    else
+        clippoWatch = childp.spawn "#{__dirname}/../bin/clippo-watch", [], 
+            cwd: "#{__dirname}/../bin"
+            detached: false
+    
+        watcher = chokidar.watch "#{__dirname}/../bin/pb.json", persistent: true
+        watcher.on 'add',    (path) => readPBjson path
+        watcher.on 'change', (path) => readPBjson path
         
 # 0000000   0000000   00000000   000   000
 #000       000   000  000   000   000 000 
@@ -182,9 +199,12 @@ pasteIndex = (index) ->
     originApp = buffers.splice(index, 1)[0].app
     win.close()
     paste = () ->
-        childp.exec "osascript " + osascript """
-        tell application "System Events" to keystroke "v" using command down
-        """
+        if slash.win()
+            log 'paste'
+        else
+            childp.exec "osascript " + osascript """
+            tell application "System Events" to keystroke "v" using command down
+            """
     setTimeout paste, 10
     
 #0000000    00000000  000    
@@ -206,7 +226,7 @@ deleteIndex = (index) ->
 toggleWindow = ->
     if win?.isVisible()
         win.hide()    
-        app.dock.hide()
+        app.dock?.hide()
     else
         showWindow()
 
@@ -216,18 +236,20 @@ showWindow = ->
         win.show()
     else
         createWindow()
-    app.dock.show()
+    app.dock?.show()
     
 createWindow = ->
+    
     win = new BrowserWindow
         width:           1000
         height:          1200
-        titleBarStyle:   'hidden'
         backgroundColor: '#181818'
         maximizable:     true
         minimizable:     true
         fullscreen:      false
         show:            false
+        titleBarStyle:   'hidden'
+        autoHideMenuBar: true
         
     bounds = prefs.get 'bounds'
     win.setBounds bounds if bounds?
@@ -240,8 +262,8 @@ createWindow = ->
     win.on 'move', saveBounds
     win.on 'close',  ->
         activateApp()
-        app.dock.hide()
-    app.dock.show()
+        app.dock?.hide()
+    app.dock?.show()
     win
 
 saveBounds = -> if win? then prefs.set 'bounds', win.getBounds()
@@ -258,14 +280,17 @@ showAbout = ->
 reload = (index=0) -> win?.webContents.send 'loadBuffers', buffers, index
     
 clearBuffer = ->
+    
     buffers = []
     saveBuffer()
     reload()
         
 saveBuffer = ->
+    
     noon.save "#{app.getPath('userData')}/buffers.noon", buffers.slice(- prefs.get('maxBuffers', 50))
     
 readBuffer = ->
+    
     try
         buffers = noon.load "#{app.getPath('userData')}/buffers.noon"
         buffers = buffers ? []
@@ -284,7 +309,7 @@ app.on 'ready', ->
         
     tray = new Tray "#{__dirname}/../img/menu.png"
     tray.on 'click', toggleWindow
-    app.dock.hide() if app.dock
+    app.dock?.hide()
     
     app.setName 'clippo'
     
@@ -298,31 +323,25 @@ app.on 'ready', ->
         label: app.getName()
         submenu: [
             label: "About #{pkg.name}"
-            accelerator: 'Command+.'
+            accelerator: 'CmdOrCtrl+.'
             click: -> showAbout()
         ,            
             label: 'Clear Buffer'
-            accelerator: 'Command+K'
+            accelerator: 'CmdOrCtrl+K'
             click: -> clearBuffer()
         ,
             label: 'Save Buffer'
-            accelerator: 'Command+S'
+            accelerator: 'CmdOrCtrl+S'
             click: -> saveBuffer()
         ,
             type: 'separator'
-        ,
-            label:       "Hide #{pkg.productName}"
-            accelerator: 'Cmd+H'
-            role:        'hide'
-        ,
-            label:       'Hide Others'
-            accelerator: 'Cmd+Alt+H'
-            role:        'hideothers'
-        ,
-            type: 'separator'
+        ,                            
+            label:       'Close Window'
+            accelerator: 'CmdOrCtrl+W'
+            click:       -> win?.close()
         ,
             label: 'Quit'
-            accelerator: 'Command+Q'
+            accelerator: 'CmdOrCtrl+Q'
             click: -> 
                 saveBounds()
                 saveBuffer()
@@ -339,40 +358,28 @@ app.on 'ready', ->
         label: 'Window'
         submenu: [
             label:       'Minimize'
-            accelerator: 'Alt+Cmd+M'
+            accelerator: 'CmdOrCtrl+Alt+M'
             click:       -> win?.minimize()
         ,
             label:       'Maximize'
-            accelerator: 'Cmd+Shift+m'
+            accelerator: 'CmdOrCtrl+Shift+m'
             click:       -> if win?.isMaximized() then win?.unmaximize() else win?.maximize()
-        ,
-            type: 'separator'
-        ,                            
-            label:       'Close Window'
-            accelerator: 'Cmd+W'
-            click:       -> win?.close()
-        ,
-            type: 'separator'
-        ,                            
-            label:       'Bring All to Front'
-            accelerator: 'Alt+Cmd+`'
-            click:       -> win?.show()
         ,
             type: 'separator'
         ,   
             label:       'Reload Window'
-            accelerator: 'Ctrl+Alt+Cmd+L'
+            accelerator: 'CmdOrCtrl+Alt+L'
             click:       -> win?.webContents.reloadIgnoringCache()
         ,                
             label:       'Toggle DevTools'
-            accelerator: 'Cmd+Alt+I'
+            accelerator: 'CmdOrCtrl+Alt+I'
             click:       -> win?.webContents.openDevTools()
         ]
     ]
         
     prefs.init 
         maxBuffers: 50
-        shortcut: 'Command+Alt+V'
+        shortcut: 'CmdOrCtrl+Alt+V'
 
     electron.globalShortcut.register prefs.get('shortcut'), showWindow
 
@@ -382,10 +389,10 @@ app.on 'ready', ->
     fs.ensureDirSync iconDir
 
     try
-        fs.accessSync path.join(iconDir, 'clippo.png'), fs.R_OK
+        fs.accessSync slash.join(iconDir, 'clippo.png'), fs.R_OK
     catch    
         try
-            fs.copySync "#{__dirname}/../img/clippo.png", path.join iconDir, 'clippo.png' 
+            fs.copySync "#{__dirname}/../img/clippo.png", slash.join iconDir, 'clippo.png' 
         catch err
             log "can't copy clippo icon: #{err}"
     

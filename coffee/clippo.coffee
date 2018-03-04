@@ -3,17 +3,10 @@
 # 000       000      000  00000000   00000000   000   000
 # 000       000      000  000        000        000   000
 #  0000000  0000000  000  000        000         0000000 
-{
-encodePath,
-keyinfo,
-scheme,
-prefs,
-post,
-elem,
-log,
-$}        = require 'kxk'
+
+{ encodePath, keyinfo, scheme, prefs, slash, post, elem, log, $ } = require 'kxk'
+
 pkg       = require '../package.json'
-path      = require 'path'
 electron  = require 'electron'
 clipboard = electron.clipboard
 ipc       = electron.ipcRenderer
@@ -30,11 +23,11 @@ doPaste = -> ipc.send 'paste', current
 # 000   000  000   0000000   000   000  0000000  000   0000000   000   000     000   
 
 highlight = (index) =>
-    cdiv = $('.current')
+    cdiv =$ '.current'
     if cdiv?
         cdiv.classList.remove 'current'
     current = Math.max 0, Math.min index, buffers.length-1
-    line = $(current)
+    line =$ "line#{current}"
     if line?
         line.classList.add 'current'
         line.scrollIntoViewIfNeeded()
@@ -71,13 +64,13 @@ loadBuffers = (buffs, index) ->
         $('main').innerHTML = "<center><img class='info' src=\"#{__dirname}/../img/empty_#{s}.png\"></center>" 
         return
 
-    iconDir = encodePath path.join electron.remote.app.getPath('userData'), 'icons'
+    iconDir = encodePath slash.join electron.remote.app.getPath('userData'), 'icons'
         
     $('main').innerHTML = "<div id='buffer'></div>"
     
     i = 0
     for buf in buffers
-        div = elem id: i, class: 'line-div', onClick: "window.onClick(#{i});", child:
+        div = elem id: "line#{i}", class: 'line-div', onClick: "window.onClick(#{i});", child:
             elem 'span', class: 'line-span', children: [
                 elem 'img', onClick: "window.highlight(#{i});", class: 'appicon', src: "#{iconDir}/#{buf.app}.png"
                 if buf.image?
@@ -94,6 +87,10 @@ loadBuffers = (buffs, index) ->
     highlight index ? buffers.length-1
 
 setTitleBar = ->
+    if slash.win()
+        $('titlebar').remove()
+        $('.main').style.top = '0px'
+        return
     html  = "<span class='titlebarName'>#{pkg.name}</span>"
     html += "<span class='titlebarDot'> ● </span>"
     html += "<span class='titlebarVersion'>#{pkg.version}</span>"
