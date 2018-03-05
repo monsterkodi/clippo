@@ -55,7 +55,9 @@ $('main').addEventListener "mouseover", (event) ->
 
 ipc.on "loadBuffers", (event, buffs, index) -> loadBuffers buffs, index
 
-post.on 'schemeChanged', -> loadBuffers buffers, current
+post.on 'schemeChanged', -> 
+    log 'schemeChanged'
+    loadBuffers buffers, current
 
 loadBuffers = (buffs, index) ->
 
@@ -113,14 +115,14 @@ document.onkeydown = (event) ->
     { mod, key, combo } = keyinfo.forEvent event
 
     switch combo
-        when 'k', 'command+k', 'ctrl+k'     then return ipc.send 'clearBuffer'
-        when 'i', 'command+i', 'ctrl+k'     then return scheme.toggle()
-        when 'esc'                          then return ipc.send 'closeWin'
-        when 'down', 'right'                then return highlight current-1
-        when 'up'  , 'left'                 then return highlight current+1
-        when 'home', 'page up'              then return highlight buffers.length-1
-        when 'end',  'page down'            then return highlight 0
-        when 'enter', 'command+v', 'ctrl+v' then return doPaste()
+        when 'k', 'command+k', 'ctrl+k'             then return ipc.send 'clearBuffer'
+        when 'i', 'command+i', 'ctrl+i', 'alt+i'    then return scheme.toggle()
+        when 'esc'                                  then return ipc.send 'closeWin'
+        when 'down', 'right'                        then return highlight current-1
+        when 'up'  , 'left'                         then return highlight current+1
+        when 'home', 'page up'                      then return highlight buffers.length-1
+        when 'end',  'page down'                    then return highlight 0
+        when 'enter', 'command+v', 'ctrl+v'         then return doPaste()
         when 'backspace', 'command+backspace', 'ctrl+backspace', 'delete' then return ipc.send 'del', current
 
 prefs.init()
