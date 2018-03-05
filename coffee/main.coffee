@@ -6,11 +6,12 @@
 
 { osascript, resolve, prefs, slash, about, noon, childp, log, fs, _ } = require 'kxk'
 
+electron = require 'electron'
+chokidar = require 'chokidar'
+pkg      = require '../package.json'
+
 if not slash.win()
     appIconSync = require './appiconsync'
-electron      = require 'electron'
-chokidar      = require 'chokidar'
-pkg           = require '../package.json'
 
 app           = electron.app
 BrowserWindow = electron.BrowserWindow
