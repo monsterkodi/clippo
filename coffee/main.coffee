@@ -31,22 +31,22 @@ clippoWatch   = null
 debug         = false
 
 # 000  00000000    0000000
-# 000  000   000  000     
-# 000  00000000   000     
-# 000  000        000     
+# 000  000   000  000
+# 000  00000000   000
+# 000  000        000
 # 000  000         0000000
 
-ipc.on 'paste', (event, index) -> pasteIndex index 
-ipc.on 'del',   (event, index) -> deleteIndex index 
+ipc.on 'paste', (event, index) -> pasteIndex index
+ipc.on 'del',   (event, index) -> deleteIndex index
 ipc.on 'clearBuffer',          -> clearBuffer()
 ipc.on 'getBuffers', (event)   -> event.returnValue = buffers
 ipc.on 'toggleMaximize',       -> if win?.isMaximized() then win?.unmaximize() else win?.maximize()
 ipc.on 'closeWin',             -> win?.close()
 
 # 0000000    0000000  000000000  000  000   000  00000000
-#000   000  000          000     000  000   000  000     
-#000000000  000          000     000   000 000   0000000 
-#000   000  000          000     000     000     000     
+#000   000  000          000     000  000   000  000
+#000000000  000          000     000   000 000   0000000
+#000   000  000          000     000     000     000
 #000   000   0000000     000     000      0      00000000
 
 getActiveApp = ->
@@ -58,10 +58,10 @@ getActiveApp = ->
     do shell script "echo " & n
     """
     appName = childp.execSync "osascript #{script}"
-    appName = String(appName).trim()    
+    appName = String(appName).trim()
     appName
 
-updateActiveApp = -> 
+updateActiveApp = ->
     appName = getActiveApp()
     if appName and appName != app.getName()
         activeApp = appName
@@ -81,9 +81,9 @@ activateApp = ->
 #000000000  00000000   00000000   000  000       000   000  000 0 000
 #000   000  000        000        000  000       000   000  000  0000
 #000   000  000        000        000   0000000   0000000   000   000
-        
+
 saveAppIcon = (appName) ->
-    
+
     iconPath = "#{iconDir}/#{appName}.png"
     if not slash.isFile iconPath
         png = appIconSync appName, iconDir, 128
@@ -99,37 +99,35 @@ saveAppIcon = (appName) ->
 readPBjson = (path) ->
 
     obj = noon.load path
-    
-    isEmpty = buffers.length == 0
-    
+
     return if not obj.text? and not obj.image?
     return if buffers.length and obj.count == buffers[buffers.length-1].count
-                
+
     currentApp = getActiveApp()
     currentApp = 'clippo' if currentApp == 'Electron'
     originApp  = 'clippo' if (not originApp) and (not currentApp)
     saveAppIcon originApp ? currentApp
 
-    if obj.image? 
-        
+    if obj.image?
+
         for b in buffers
             if b.image? and b.image == obj.image
                 _.pull buffers, b
                 break
-        
-        buffers.push 
+
+        buffers.push
             app:   originApp ? currentApp
             image: obj.image
             count: obj.count
 
-    if obj.text? 
-        
+    if obj.text?
+
         for b in buffers
             if b.text? and b.text == obj.text
                 _.pull buffers, b
                 break
-        
-        buffers.push 
+
+        buffers.push
             app:   originApp ? currentApp
             text:  obj.text
             count: obj.count
@@ -138,49 +136,86 @@ readPBjson = (path) ->
     while buffers.length > maxBuffers
         buffers.shift()
 
-    originApp = undefined        
+    originApp = undefined
     reload buffers.length-1
+
+winClipboardChanged = ->
+
+    activeWin = require 'active-win'
+    appName = 'clippo'
+
+    winInfo = activeWin.sync()
+
+    if winInfo?.owner?
+        appName = slash.base winInfo.owner.name
+        iconPath = "#{iconDir}/#{appName}.png"
+        if not slash.isFile iconPath
+            extractIcon = require 'win-icon-extractor'
+            extractIcon(winInfo.owner.path).then (result) ->
+                result = result.slice 'data:image/png;base64,'.length
+                try
+                    fs.writeFileSync iconPath, result, encoding: 'base64'
+                catch err
+                    log "write icon #{iconPath} failed"
+
+    for format in clipboard.availableFormats()
+
+        if format.startsWith 'image/'
+
+            imageBuffer = clipboard.readImage().toPNG()
+            imageData   = imageBuffer.toString('base64')
+
+            for b in buffers
+                if b.image? and b.image == imageData
+                    appName = b.app
+                    _.pull buffers, b
+                    break
+
+            buffers.push
+                app:   appName
+                image: imageData
+                count: buffers.length
+
+            reload buffers.length-1
+            return
+
+    text = clipboard.readText()
+    if text.length and text.trim().length
+
+        for b in buffers
+            if b.text? and b.text == text
+                appName = b.app
+                _.pull buffers, b
+                break
+
+        buffers.push
+            app:   appName
+            text:  text
+            count: buffers.length
+
+        reload buffers.length-1
 
 watchClipboard = ->
 
     if slash.win()
+
         cw = require 'clipboard-watch'
-        cw.watcher ->
-            activeWin = require 'active-win'
-            appName = 'clippo'
-            
-            winInfo = activeWin.sync()
-            if winInfo?.owner?
-                appName = slash.base winInfo.owner.name
-                iconPath = "#{iconDir}/#{appName}.png"
-                if not slash.isFile iconPath
-                    extractIcon = require 'win-icon-extractor'
-                    extractIcon(winInfo.owner.path).then (result) ->
-                        result = result.slice 'data:image/png;base64,'.length
-                        try
-                            fs.writeFileSync iconPath, result, encoding: 'base64'
-                        catch err
-                            log "write icon #{iconPath} failed"
-                
-            buffers.push 
-                app:   appName
-                text:  clipboard.readText()
-                count: buffers.length
-            reload buffers.length-1
+        cw.watcher winClipboardChanged
+
     else
-        clippoWatch = childp.spawn "#{__dirname}/../bin/clippo-watch", [], 
+        clippoWatch = childp.spawn "#{__dirname}/../bin/clippo-watch", [],
             cwd: "#{__dirname}/../bin"
             detached: false
-    
+
         watcher = chokidar.watch "#{__dirname}/../bin/pb.json", persistent: true
         watcher.on 'add',    (path) => readPBjson path
         watcher.on 'change', (path) => readPBjson path
-        
+
 # 0000000   0000000   00000000   000   000
-#000       000   000  000   000   000 000 
-#000       000   000  00000000     00000  
-#000       000   000  000           000   
-# 0000000   0000000   000           000   
+#000       000   000  000   000   000 000
+#000       000   000  00000000     00000
+#000       000   000  000           000
+# 0000000   0000000   000           000
 
 copyIndex = (index) ->
     return if (index < 0) or (index > buffers.length-1)
@@ -188,38 +223,36 @@ copyIndex = (index) ->
         image = nativeImage.createFromBuffer new Buffer buffers[index].image, 'base64'
         if not image.isEmpty() and (image.getSize().width * image.getSize().height > 0)
             clipboard.writeImage image,  'image/png'
-    if buffers[index].text? and (buffers[index].text.length > 0) 
-        clipboard.writeText buffers[index].text, 'text/plain' 
+    if buffers[index].text? and (buffers[index].text.length > 0)
+        clipboard.writeText buffers[index].text, 'text/plain'
 
 #00000000    0000000    0000000  000000000  00000000
-#000   000  000   000  000          000     000     
-#00000000   000000000  0000000      000     0000000 
-#000        000   000       000     000     000     
+#000   000  000   000  000          000     000
+#00000000   000000000  0000000      000     0000000
+#000        000   000       000     000     000
 #000        000   000  0000000      000     00000000
 
 pasteIndex = (index) ->
     copyIndex index
     originApp = buffers.splice(index, 1)[0].app
-    win.close()
     paste = () ->
-        if slash.win()
-            log 'paste'
-        else
+        if not slash.win()
+            win.close()
             childp.exec "osascript " + osascript """
             tell application "System Events" to keystroke "v" using command down
             """
     setTimeout paste, 10
-    
-#0000000    00000000  000    
-#000   000  000       000    
-#000   000  0000000   000    
-#000   000  000       000    
+
+#0000000    00000000  000
+#000   000  000       000
+#000   000  0000000   000
+#000   000  000       000
 #0000000    00000000  0000000
 
 deleteIndex = (index) ->
-    buffers.splice index, 1 
+    buffers.splice index, 1
     reload index-1
-    
+
 #000   000  000  000   000  0000000     0000000   000   000
 #000 0 000  000  0000  000  000   000  000   000  000 0 000
 #000000000  000  000 0 000  000   000  000   000  000000000
@@ -228,7 +261,7 @@ deleteIndex = (index) ->
 
 toggleWindow = ->
     if win?.isVisible()
-        win.hide()    
+        win.hide()
         app.dock?.hide()
     else
         showWindow()
@@ -240,9 +273,9 @@ showWindow = ->
     else
         createWindow()
     app.dock?.show()
-    
+
 createWindow = ->
-    
+
     win = new BrowserWindow
         width:           1000
         height:          1200
@@ -253,10 +286,10 @@ createWindow = ->
         show:            false
         titleBarStyle:   'hidden'
         autoHideMenuBar: true
-        
+
     bounds = prefs.get 'bounds'
     win.setBounds bounds if bounds?
-        
+
     win.loadURL "file://#{__dirname}/index.html"
     win.webContents.openDevTools() if debug
     win.on 'ready-to-show', -> win.show()
@@ -273,62 +306,62 @@ saveBounds = -> if win? then prefs.set 'bounds', win.getBounds()
 
 showAbout = ->
     dark = 'dark' == prefs.get 'scheme', 'dark'
-    about 
+    about
         img:        "#{__dirname}/../img/about.png"
         color:      dark and '#383838' or '#ddd'
         background: dark and '#282828' or '#fff'
         highlight:  dark and '#fff'    or '#000'
         pkg:        pkg
-    
+
 reload = (index=0) -> win?.webContents.send 'loadBuffers', buffers, index
-    
+
 clearBuffer = ->
-    
+
     buffers = []
     saveBuffer()
     reload()
-        
+
 saveBuffer = ->
-    
+
     noon.save "#{app.getPath('userData')}/buffers.noon", buffers.slice(- prefs.get('maxBuffers', 50))
-    
+
 readBuffer = ->
-    
+
     try
         buffers = noon.load "#{app.getPath('userData')}/buffers.noon"
         buffers = buffers ? []
     catch
-        buffers = [] 
-        
+        buffers = []
+
 app.on 'window-all-closed', (event) -> event.preventDefault()
 
 #00000000   00000000   0000000   0000000    000   000
-#000   000  000       000   000  000   000   000 000 
-#0000000    0000000   000000000  000   000    00000  
-#000   000  000       000   000  000   000     000   
-#000   000  00000000  000   000  0000000       000   
+#000   000  000       000   000  000   000   000 000
+#0000000    0000000   000000000  000   000    00000
+#000   000  000       000   000  000   000     000
+#000   000  00000000  000   000  0000000       000
 
-app.on 'ready', -> 
-        
+app.on 'ready', ->
+
     tray = new Tray "#{__dirname}/../img/menu.png"
     tray.on 'click', toggleWindow
     app.dock?.hide()
-    
+
     app.setName 'clippo'
-    
+
     # 00     00  00000000  000   000  000   000
     # 000   000  000       0000  000  000   000
     # 000000000  0000000   000 0 000  000   000
     # 000 0 000  000       000  0000  000   000
-    # 000   000  00000000  000   000   0000000 
-    
+    # 000   000  00000000  000   000   0000000
+
     Menu.setApplicationMenu Menu.buildFromTemplate [
         label: app.getName()
         submenu: [
             label: "About #{pkg.name}"
             accelerator: 'CmdOrCtrl+.'
             click: -> showAbout()
-        ,            
+        ,
             label: 'Clear Buffer'
             accelerator: 'CmdOrCtrl+K'
             click: -> clearBuffer()
@@ -338,14 +371,14 @@ app.on 'ready', ->
             click: -> saveBuffer()
         ,
             type: 'separator'
-        ,                            
+        ,
             label:       'Close Window'
             accelerator: 'CmdOrCtrl+W'
             click:       -> win?.close()
         ,
             label: 'Quit'
             accelerator: 'CmdOrCtrl+Q'
-            click: -> 
+            click: ->
                 saveBounds()
                 saveBuffer()
                 clippoWatch?.kill()
@@ -357,7 +390,7 @@ app.on 'ready', ->
         # 000000000  000  000 0 000  000   000  000   000  000000000
         # 000   000  000  000  0000  000   000  000   000  000   000
         # 00     00  000  000   000  0000000     0000000   00     00
-        
+
         label: 'Window'
         submenu: [
             label:       'Minimize'
@@ -369,18 +402,18 @@ app.on 'ready', ->
             click:       -> if win?.isMaximized() then win?.unmaximize() else win?.maximize()
         ,
             type: 'separator'
-        ,   
+        ,
             label:       'Reload Window'
             accelerator: 'CmdOrCtrl+Alt+L'
             click:       -> win?.webContents.reloadIgnoringCache()
-        ,                
+        ,
             label:       'Toggle DevTools'
             accelerator: 'CmdOrCtrl+Alt+I'
             click:       -> win?.webContents.openDevTools()
         ]
     ]
-        
-    prefs.init 
+
+    prefs.init
         maxBuffers: 50
         shortcut: 'CmdOrCtrl+Alt+V'
 
@@ -388,21 +421,21 @@ app.on 'ready', ->
 
     readBuffer()
 
-    iconDir = resolve "#{app.getPath('userData')}/icons"    
+    iconDir = resolve "#{app.getPath('userData')}/icons"
     fs.ensureDirSync iconDir
 
     try
         fs.accessSync slash.join(iconDir, 'clippo.png'), fs.R_OK
-    catch    
+    catch
         try
-            fs.copySync "#{__dirname}/../img/clippo.png", slash.join iconDir, 'clippo.png' 
+            fs.copySync "#{__dirname}/../img/clippo.png", slash.join iconDir, 'clippo.png'
         catch err
             log "can't copy clippo icon: #{err}"
-    
+
     watchClipboard()
     if slash.win()
         showWindow()
 
-if app.makeSingleInstance showWindow 
+if app.makeSingleInstance showWindow
     app.quit()
     return

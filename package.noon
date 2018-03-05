@@ -30,7 +30,6 @@ optionalDependencies
                 active-win      ^3.0.0
                 win-icon-extractor  ^1.0.4
 devDependencies
-                appdmg          ^0.4.5
-                electron        ^1.6.2
+                electron        ^1.8.2
                 electron-packager  ^8.5.2
                 electron-rebuild  ^1.5.7
