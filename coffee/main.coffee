@@ -346,8 +346,8 @@ app.on 'ready', ->
     tray = new Tray "#{__dirname}/../img/menu.png"
     tray.on 'click', toggleWindow
     app.dock?.hide()
-
-    app.setName 'clippo'
+    
+    app.setName pkg.productName
 
     # 00     00  00000000  000   000  000   000
     # 000   000  000       0000  000  000   000
@@ -383,6 +383,7 @@ app.on 'ready', ->
                 saveBuffer()
                 clippoWatch?.kill()
                 app.exit 0
+                process.exit 0
         ]
     ,
         # 000   000  000  000   000  0000000     0000000   000   000
@@ -436,6 +437,8 @@ app.on 'ready', ->
     if slash.win()
         showWindow()
 
+app.setName pkg.productName        
+        
 if app.makeSingleInstance showWindow
     app.quit()
     return

@@ -1,11 +1,13 @@
 #!/usr/bin/env bash
 cd `dirname $0`/..
 
-konrad --run
+rm -r clippo-win32-x64
+
+konrad
+
+node_modules/.bin/electron-rebuild
 
 IGNORE="/(.*\.dmg$|Icon$|watch$|coffee$|icons$|.*md$|pug$|styl$|.*\.noon$|.*\.lock$|img/banner\.png)"
 
-node_modules/electron-packager/cli.js . --overwrite --icon=img/clippo.ico --no-prune --ignore=$IGNORE
+node_modules/electron-packager/cli.js . --overwrite --icon=img/clippo.ico --no-prune --ignore=$IGNORE--win32metadata.FileDescription=clippo
 
-rm clippo-win32-x64/LICENSE*
-rm clippo-win32-x64/version
