@@ -218,6 +218,7 @@ watchClipboard = ->
 # 0000000   0000000   000           000
 
 copyIndex = (index) ->
+    
     return if (index < 0) or (index > buffers.length-1)
     if buffers[index].image
         image = nativeImage.createFromBuffer new Buffer buffers[index].image, 'base64'
@@ -233,15 +234,16 @@ copyIndex = (index) ->
 #000        000   000  0000000      000     00000000
 
 pasteIndex = (index) ->
+    
     copyIndex index
-    originApp = buffers.splice(index, 1)[0].app
+    originApp = buffers.splice(index, 1)[0]?.app
     paste = () ->
-        if not slash.win()
-            win.close()
-            childp.exec "osascript " + osascript """
-            tell application "System Events" to keystroke "v" using command down
-            """
-    setTimeout paste, 10
+        win.close()
+        childp.exec "osascript " + osascript """
+        tell application "System Events" to keystroke "v" using command down
+        """
+    if not slash.win() and originApp
+        setTimeout paste, 10
 
 #0000000    00000000  000
 #000   000  000       000
