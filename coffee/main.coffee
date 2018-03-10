@@ -307,6 +307,7 @@ createWindow = ->
 saveBounds = -> if win? then prefs.set 'bounds', win.getBounds()
 
 showAbout = ->
+    
     dark = 'dark' == prefs.get 'scheme', 'dark'
     about
         img:        "#{__dirname}/../img/about.png"
@@ -347,6 +348,15 @@ app.on 'ready', ->
 
     tray = new Tray "#{__dirname}/../img/menu.png"
     tray.on 'click', toggleWindow
+        
+    tray.setContextMenu Menu.buildFromTemplate [
+        label: "Quit"
+        click: -> app.exit 0; process.exit 0
+    ,
+        label: "About"
+        click: showAbout
+    ]
+    
     app.dock?.hide()
     
     app.setName pkg.productName
