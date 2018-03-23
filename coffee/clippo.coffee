@@ -6,7 +6,7 @@
  0000000  0000000  000  000        000         0000000
 ###
 
-{ keyinfo, scheme, prefs, slash, post, elem, popup, pos, log, $ } = require 'kxk'
+{ keyinfo, scheme, prefs, slash, post, elem, popup, pos, str, log, $ } = require 'kxk'
 
 pkg       = require '../package.json'
 electron  = require 'electron'
@@ -15,7 +15,6 @@ clipboard = electron.clipboard
 ipc       = electron.ipcRenderer
 current   = 0
 buffers   = []
-encode    = require('html-entities').XmlEntities.encode
 
 doPaste = -> ipc.send 'paste', current
 
@@ -83,7 +82,7 @@ loadBuffers = (buffs, index) ->
                 if buf.image?
                     elem 'img', src: "data:image/png;base64,#{buf.image}", class: 'image'
                 else if buf.text?
-                    encl = ( encode(l) for l in buf.text.split "\n" )
+                    encl = ( str.encode(l) for l in buf.text.split "\n" )
                     elem 'pre', html: encl.join "<br>"
                 else
                     elem 'pre'
