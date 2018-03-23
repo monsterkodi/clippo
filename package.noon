@@ -23,7 +23,7 @@ dependencies
                 chokidar        ^1.6.1
                 clipboard-watch  ^1.0.2
                 html-entities   ^1.2.0
-                kxk             ^0.49.0
+                kxk             ^0.50.0
                 opener          ^1.4.3
 optionalDependencies
                 simple-plist    ^0.2.1
