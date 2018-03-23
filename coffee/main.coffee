@@ -1,10 +1,12 @@
-# 00     00   0000000   000  000   000
-# 000   000  000   000  000  0000  000
-# 000000000  000000000  000  000 0 000
-# 000 0 000  000   000  000  000  0000
-# 000   000  000   000  000  000   000
+###
+00     00   0000000   000  000   000
+000   000  000   000  000  0000  000
+000000000  000000000  000  000 0 000
+000 0 000  000   000  000  000  0000
+000   000  000   000  000  000   000
+###
 
-{ osascript, resolve, prefs, slash, about, noon, childp, log, fs, _ } = require 'kxk'
+{ osascript, prefs, slash, about, noon, childp, log, fs, _ } = require 'kxk'
 
 electron = require 'electron'
 chokidar = require 'chokidar'
@@ -42,6 +44,8 @@ ipc.on 'clearBuffer',          -> clearBuffer()
 ipc.on 'getBuffers', (event)   -> event.returnValue = buffers
 ipc.on 'toggleMaximize',       -> if win?.isMaximized() then win?.unmaximize() else win?.maximize()
 ipc.on 'closeWin',             -> win?.close()
+ipc.on 'showAbout',            -> showAbout()
+ipc.on 'quitClippo',           -> quitClippo()
 
 # 0000000    0000000  000000000  000  000   000  00000000
 #000   000  000          000     000  000   000  000
@@ -316,6 +320,14 @@ showAbout = ->
         highlight:  dark and '#fff'    or '#000'
         pkg:        pkg
 
+quitClippo = ->
+    
+    saveBounds()
+    saveBuffer()
+    clippoWatch?.kill()
+    app.exit 0
+    process.exit 0
+        
 reload = (index=0) -> win?.webContents.send 'loadBuffers', buffers, index
 
 clearBuffer = ->
@@ -390,12 +402,7 @@ app.on 'ready', ->
         ,
             label: 'Quit'
             accelerator: 'CmdOrCtrl+Q'
-            click: ->
-                saveBounds()
-                saveBuffer()
-                clippoWatch?.kill()
-                app.exit 0
-                process.exit 0
+            click: -> quitClippo()
         ]
     ,
         # 000   000  000  000   000  0000000     0000000   000   000
@@ -434,7 +441,7 @@ app.on 'ready', ->
 
     readBuffer()
 
-    iconDir = resolve "#{app.getPath('userData')}/icons"
+    iconDir = slash.resolve "#{app.getPath('userData')}/icons"
     fs.ensureDirSync iconDir
 
     try

@@ -1,13 +1,16 @@
-#  0000000  000      000  00000000   00000000    0000000
-# 000       000      000  000   000  000   000  000   000
-# 000       000      000  00000000   00000000   000   000
-# 000       000      000  000        000        000   000
-#  0000000  0000000  000  000        000         0000000
+###
+ 0000000  000      000  00000000   00000000    0000000
+000       000      000  000   000  000   000  000   000
+000       000      000  00000000   00000000   000   000
+000       000      000  000        000        000   000
+ 0000000  0000000  000  000        000         0000000
+###
 
-{ encodePath, keyinfo, scheme, prefs, slash, post, elem, log, $ } = require 'kxk'
+{ keyinfo, scheme, prefs, slash, post, elem, popup, pos, log, $ } = require 'kxk'
 
 pkg       = require '../package.json'
 electron  = require 'electron'
+
 clipboard = electron.clipboard
 ipc       = electron.ipcRenderer
 current   = 0
@@ -68,7 +71,7 @@ loadBuffers = (buffs, index) ->
         $('main').innerHTML = "<center><img class='info' src=\"#{__dirname}/../img/empty_#{s}.png\"></center>"
         return
 
-    iconDir = encodePath slash.join electron.remote.app.getPath('userData'), 'icons'
+    iconDir = slash.encode slash.join electron.remote.app.getPath('userData'), 'icons'
 
     $('main').innerHTML = "<div id='buffer'></div>"
 
@@ -102,6 +105,37 @@ setTitleBar = ->
     $('titlebar').innerHTML = html
     $('titlebar').ondblclick = => ipc.send 'toggleMaximize'
 
+$('main').addEventListener "contextmenu", (event) ->
+    
+    absPos = pos event
+    if not absPos?
+        absPos = pos $('main').getBoundingClientRect().left, $('main').getBoundingClientRect().top
+        
+    log 'contextmenu', absPos
+    
+    opt = items: [
+        text:   'Clear'
+        combo:  'k' 
+        cb:     -> ipc.send 'clearBuffer'
+    ,
+        text:   'Show Menu'
+        combo:  'alt'
+        cb:     -> electron.remote.getCurrentWindow().setMenuBarVisibility true
+    ,
+        text:   'About'
+        combo:  'ctrl+.'
+        cb:      -> ipc.send 'showAbout'
+    ,
+        text:   'Quit'
+        combo:  'ctrl+q' 
+        cb:     -> ipc.send 'quitClippo'
+    ]
+    
+    opt.x = absPos.x
+    opt.y = absPos.y
+
+    popup.menu opt
+    
 window.onunload = -> document.onkeydown = null
 
 # 000   000  00000000  000   000

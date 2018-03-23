@@ -56,6 +56,30 @@ body
     position            relative
     bottom              1px
 
+// 00000000    0000000   00000000   000   000  00000000
+// 000   000  000   000  000   000  000   000  000   000
+// 00000000   000   000  00000000   000   000  00000000
+// 000        000   000  000        000   000  000
+// 000         0000000   000         0000000   000
+
+.popup
+    position            absolute
+    border-radius       3px
+
+.popupItem
+    padding             2px
+    padding-left        2 * frameWidth
+    padding-right       2 * frameWidth + 70px
+    cursor              pointer
+    &:last-child
+        padding-bottom  frameWidth
+    &:first-child
+        padding-top     frameWidth
+
+.popupCombo
+    position            absolute
+    right               2 * frameWidth
+    
 // 00     00   0000000   000  000   000  
 // 000   000  000   000  000  0000  000  
 // 000000000  000000000  000  000 0 000  
