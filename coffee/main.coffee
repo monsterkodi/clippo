@@ -6,7 +6,7 @@
 000   000  000   000  000  000   000
 ###
 
-{ osascript, prefs, slash, about, noon, childp, log, fs, _ } = require 'kxk'
+{ osascript, prefs, empty, slash, about, noon, childp, log, fs, _ } = require 'kxk'
 
 electron = require 'electron'
 chokidar = require 'chokidar'
@@ -152,6 +152,10 @@ winClipboardChanged = ->
 
     if winInfo?.owner?
         appName = slash.base winInfo.owner.name
+        exclude = prefs.get 'exclude', ['password-turtle']
+        if not empty exclude
+            for exapp in exclude
+                return if appName.startsWith exapp
         iconPath = "#{iconDir}/#{appName}.png"
         if not slash.isFile iconPath
             extractIcon = require 'win-icon-extractor'
