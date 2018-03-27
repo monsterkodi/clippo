@@ -1,6 +1,6 @@
 name            clippo
 productName     clippo
-version         1.10.0
+version         1.11.0
 description     clipboard tool
 main            js/main.js
 repository
@@ -23,7 +23,7 @@ dependencies
                 chokidar        ^1.6.1
                 clipboard-watch  ^1.0.2
                 html-entities   ^1.2.0
-                kxk             ^0.50.0
+                kxk             ^0.70.0
                 opener          ^1.4.3
 optionalDependencies
                 simple-plist    ^0.2.1
