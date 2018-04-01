@@ -364,14 +364,15 @@ app.on 'ready', ->
 
     tray = new Tray "#{__dirname}/../img/menu.png"
     tray.on 'click', toggleWindow
-        
-    tray.setContextMenu Menu.buildFromTemplate [
-        label: "Quit"
-        click: -> app.exit 0; process.exit 0
-    ,
-        label: "About"
-        click: showAbout
-    ]
+    
+    if slash.win()
+        tray.setContextMenu Menu.buildFromTemplate [
+            label: "Quit"
+            click: -> app.exit 0; process.exit 0
+        ,
+            label: "About"
+            click: showAbout
+        ]
     
     app.dock?.hide()
     

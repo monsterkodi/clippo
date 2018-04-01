@@ -110,7 +110,7 @@ $('main').addEventListener "contextmenu", (event) ->
     if not absPos?
         absPos = pos $('main').getBoundingClientRect().left, $('main').getBoundingClientRect().top
         
-    log 'contextmenu', absPos
+    # log 'contextmenu', absPos
     
     opt = items: [
         text:   'Clear'
@@ -120,6 +120,7 @@ $('main').addEventListener "contextmenu", (event) ->
         text:   'Show Menu'
         combo:  'alt'
         cb:     -> electron.remote.getCurrentWindow().setMenuBarVisibility true
+        hide:   not slash.win()
     ,
         text:   'About'
         combo:  'ctrl+.'
