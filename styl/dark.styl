@@ -15,6 +15,7 @@ titleRedColor       = #f00
 titleColor          = #333
 scrollColor         = #444
 textBlurColor       = #666
+textActiveColor     = #999
 textFocusColor      = #fff
 
 frameBorder         = frameWidth solid frameColor
@@ -57,8 +58,11 @@ pre
 #titlebar
     background          frameColor
 
+.titlebar-name
+    color               textActiveColor
+
 .titlebar-version
-    color               textBlurColor
+    color               scrollColor
 
 .titlebar-dot
     color               titleColor
@@ -84,7 +88,7 @@ pre
     background-color    frameColor
     
 .menuItem.selected
-    color               textFocusColor
+    color               textActiveColor
     
 .menu:focus .menuItem.selected
     color               textFocusColor
