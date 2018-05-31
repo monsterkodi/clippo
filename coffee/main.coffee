@@ -6,7 +6,7 @@
 000   000  000   000  000  000   000
 ###
 
-{ osascript, prefs, empty, slash, about, noon, childp, log, fs, _ } = require 'kxk'
+{ osascript, prefs, post, empty, slash, about, noon, childp, log, fs, _ } = require 'kxk'
 
 electron = require 'electron'
 chokidar = require 'chokidar'
@@ -40,12 +40,12 @@ debug         = false
 
 ipc.on 'paste', (event, index) -> pasteIndex index
 ipc.on 'del',   (event, index) -> deleteIndex index
-ipc.on 'clearBuffer',          -> clearBuffer()
 ipc.on 'getBuffers', (event)   -> event.returnValue = buffers
-ipc.on 'toggleMaximize',       -> if win?.isMaximized() then win?.unmaximize() else win?.maximize()
-ipc.on 'closeWin',             -> win?.close()
-ipc.on 'showAbout',            -> showAbout()
-ipc.on 'quitClippo',           -> quitClippo()
+
+post.on 'showAbout',   -> showAbout()
+post.on 'clearBuffer', -> clearBuffer()
+post.on 'saveBuffer',  -> saveBuffer()
+post.on 'quitClippo',  -> quitClippo()
 
 # 0000000    0000000  000000000  000  000   000  00000000
 #000   000  000          000     000  000   000  000
@@ -292,11 +292,13 @@ createWindow = ->
         backgroundColor: '#181818'
         maximizable:     true
         minimizable:     true
-        fullscreen:      false
-        show:            false
-        titleBarStyle:   'hidden'
         autoHideMenuBar: true
-
+        fullscreen:      false
+        fullscreenable:  false
+        show:            false
+        frame:           false
+        titleBarStyle:   'hidden'
+        
     bounds = prefs.get 'bounds'
     win.setBounds bounds if bounds?
 
@@ -377,66 +379,6 @@ app.on 'ready', ->
     app.dock?.hide()
     
     app.setName pkg.productName
-
-    # 00     00  00000000  000   000  000   000
-    # 000   000  000       0000  000  000   000
-    # 000000000  0000000   000 0 000  000   000
-    # 000 0 000  000       000  0000  000   000
-    # 000   000  00000000  000   000   0000000
-
-    Menu.setApplicationMenu Menu.buildFromTemplate [
-        label: app.getName()
-        submenu: [
-            label: "About #{pkg.name}"
-            accelerator: 'CmdOrCtrl+.'
-            click: -> showAbout()
-        ,
-            label: 'Clear Buffer'
-            accelerator: 'CmdOrCtrl+K'
-            click: -> clearBuffer()
-        ,
-            label: 'Save Buffer'
-            accelerator: 'CmdOrCtrl+S'
-            click: -> saveBuffer()
-        ,
-            type: 'separator'
-        ,
-            label:       'Close Window'
-            accelerator: 'CmdOrCtrl+W'
-            click:       -> win?.close()
-        ,
-            label: 'Quit'
-            accelerator: 'CmdOrCtrl+Q'
-            click: -> quitClippo()
-        ]
-    ,
-        # 000   000  000  000   000  0000000     0000000   000   000
-        # 000 0 000  000  0000  000  000   000  000   000  000 0 000
-        # 000000000  000  000 0 000  000   000  000   000  000000000
-        # 000   000  000  000  0000  000   000  000   000  000   000
-        # 00     00  000  000   000  0000000     0000000   00     00
-
-        label: 'Window'
-        submenu: [
-            label:       'Minimize'
-            accelerator: 'CmdOrCtrl+Alt+M'
-            click:       -> win?.minimize()
-        ,
-            label:       'Maximize'
-            accelerator: 'CmdOrCtrl+Shift+m'
-            click:       -> if win?.isMaximized() then win?.unmaximize() else win?.maximize()
-        ,
-            type: 'separator'
-        ,
-            label:       'Reload Window'
-            accelerator: 'CmdOrCtrl+Alt+L'
-            click:       -> win?.webContents.reloadIgnoringCache()
-        ,
-            label:       'Toggle DevTools'
-            accelerator: 'CmdOrCtrl+Alt+I'
-            click:       -> win?.webContents.openDevTools()
-        ]
-    ]
 
     prefs.init
         maxBuffers: 50

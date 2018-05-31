@@ -1,0 +1,32 @@
+
+# 00     00  00000000  000   000  000   000
+# 000   000  000       0000  000  000   000
+# 000000000  0000000   000 0 000  000   000
+# 000 0 000  000       000  0000  000   000
+# 000   000  00000000  000   000   0000000
+
+clippo
+    About                   ctrl+, ,
+    -
+    Clear                   ctrl+k k
+    Save                    ctrl+s s
+    --
+    Quit                    ctrl+q q
+
+# 000   000  000  000   000  0000000     0000000   000   000
+# 000 0 000  000  0000  000  000   000  000   000  000 0 000
+# 000000000  000  000 0 000  000   000  000   000  000000000
+# 000   000  000  000  0000  000   000  000   000  000   000
+# 00     00  000  000   000  0000000     0000000   00     00
+
+Window
+    Close                   ctrl+w w
+    -
+    Toggle Menu             alt+m m
+    Toggle Scheme           alt+i ctrl+i
+    --
+    Minimize                alt+ctrl+shift+m
+    Maximize                alt+ctrl+m
+    ---
+    Reload                  alt+ctrl+l r
+    DevTools                alt+ctrl+i i

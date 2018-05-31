@@ -5,9 +5,12 @@
 //      000     000        000     000    
 // 0000000      000        000     0000000
 
-frameWidth     = 6px
-titlebarHeight = 22px
-fontMono       = "Meslo LG S", "Liberation Mono", "Menlo", "Cousine", "Andale Mono", monospace
+
+frameWidth          = 6px
+titlebarHeight      = 30px
+titlebarFontSize    = 15px
+titlebarFont        = Bahnschrift Light, Ebrima, Varela Round, Arial Rounded MT Bold, Helvetica, Arial
+fontMono            = "Meslo LG S", "Liberation Mono", "Menlo", "Cousine", "Andale Mono", monospace
 
 fill-abs()
     position            absolute
@@ -158,6 +161,145 @@ pre
 .info // empty clipboard
     max-width               45%
     margin-top              100px
+
+// 000000000  000  000000000  000      00000000  0000000     0000000   00000000 
+//    000     000     000     000      000       000   000  000   000  000   000
+//    000     000     000     000      0000000   0000000    000000000  0000000  
+//    000     000     000     000      000       000   000  000   000  000   000
+//    000     000     000     0000000  00000000  0000000    000   000  000   000
+
+#titlebar
+    display             flex
+    flex-direction      row
+    height              titlebarHeight
+    box-sizing          border-box
+    font-size           titlebarFontSize
+    font-family         titlebarFont
+    white-space         nowrap
+    pointer-events      auto
+    cursor              pointer
+    -webkit-app-region  drag
+
+.titlebar-title
+    flex                1 1 0
+    display             flex
+    flex-direction      row
+    overflow-x          auto
+    overflow-y          hidden
+    padding-top         7px
+    padding-left        10px
+    -webkit-app-region  drag
+    font-weight         bold
+    font                titlebarFont
+    
+.titlebar-dot
+    display             inline-block
+    vertical-align      top
+    padding-left        9px
+    padding-right       9px
+    margin-top          -1px
+
+#titlebar .winicon img
+    -webkit-app-region  no-drag
+    padding-left        6px
+    padding-right       2px
+    padding-top         titlebarHeight * 0.1
+    width               titlebarHeight * 0.8
+    height              titlebarHeight * 0.8
+    
+#titlebar .winbutton
+    -webkit-app-region  no-drag
+    flex                0 0 45px
+    display             inline-block
+    text-align          center
+    vertical-align      bottom
+    font-size           18px
+    padding-top         2px
+    &.minimize
+        padding-top     5px
+
+// 00     00  00000000  000   000  000   000  
+// 000   000  000       0000  000  000   000  
+// 000000000  0000000   000 0 000  000   000  
+// 000 0 000  000       000  0000  000   000  
+// 000   000  00000000  000   000   0000000   
+            
+.menuItem
+    -webkit-app-region  no-drag
+    color               #888
+    background-color    titleColor
+    
+.menuItem.selected
+    color               #aaa
+    
+.menu:focus .menuItem
+    color               #888
+.menu:focus .menuItem.selected
+    color               #fff
+        
+.menu
+    height              titlebarHeight
+    pointer-events      auto
+    -webkit-app-region  drag
+    flex                1 1 0
+    display             flex
+    flex-direction      row
+    
+.menuItem
+    -webkit-app-region  no-drag
+    cursor              pointer
+    padding-left        10px
+    padding-right       10px
+    padding-top         7px
+    // font-weight         bold
+    display             inline-block
+    height              titlebarHeight
+    overflow            visible
+            
+// 00000000    0000000   00000000   000   000  00000000
+// 000   000  000   000  000   000  000   000  000   000
+// 00000000   000   000  00000000   000   000  00000000
+// 000        000   000  000        000   000  000
+// 000         0000000   000         0000000   000
+
+.popup
+    z-index             9999
+    background-color    frameColor
+    position            absolute
+    border-radius       3px
+    font-size           titlebarFontSize
+    font-family         titlebarFont
+    
+.popupItem
+    padding             2px
+    padding-left        2 * frameWidth
+    padding-right       2 * frameWidth + 70px
+    cursor              pointer
+    &.separator
+        padding         0
+        cursor          default
+        border          0
+        height          0
+        margin-top      2px
+        margin-bottom   2px
+    &:last-child
+        padding-bottom  frameWidth
+    &:first-child
+        padding-top     frameWidth
+
+.menuItem:active
+.popupItem:active
+    color               #ff0
+
+.popupCombo
+    color               #333
+    position            absolute
+    right               2 * frameWidth
+
+.popupCombo
+    pointer-events      none
+    position            absolute
+    right               2 * frameWidth
     
 //  0000000   0000000  00000000    0000000   000      000      
 // 000       000       000   000  000   000  000      000      

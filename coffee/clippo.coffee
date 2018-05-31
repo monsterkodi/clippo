@@ -6,7 +6,7 @@
  0000000  0000000  000  000        000         0000000
 ###
 
-{ keyinfo, scheme, prefs, slash, post, elem, popup, pos, str, log, $ } = require 'kxk'
+{ keyinfo, title, scheme, prefs, slash, post, stopEvent, elem, popup, pos, str, log, $ } = require 'kxk'
 
 pkg       = require '../package.json'
 electron  = require 'electron'
@@ -92,25 +92,34 @@ loadBuffers = (buffs, index) ->
 
     highlight index ? buffers.length-1
 
-setTitleBar = ->
-    
-    if slash.win()
-        $('titlebar').remove()
-        $('.main').style.top = '0px'
-        return
-    html  = "<span class='titlebarName'>#{pkg.name}</span>"
-    html += "<span class='titlebarDot'> ● </span>"
-    html += "<span class='titlebarVersion'>#{pkg.version}</span>"
-    $('titlebar').innerHTML = html
-    $('titlebar').ondblclick = => ipc.send 'toggleMaximize'
+# 000000000  000  000000000  000      00000000  
+#    000     000     000     000      000       
+#    000     000     000     000      0000000   
+#    000     000     000     000      000       
+#    000     000     000     0000000  00000000  
 
-$('main').addEventListener "contextmenu", (event) ->
+window.titlebar = new title 
+    pkg:    pkg 
+    menu:   __dirname + '/../coffee/menu.noon' 
+    icon:   __dirname + '/../img/menu@2x.png'
+    
+post.on 'menuAction', (action) ->
+
+    switch action
+        when 'Close'            then window.close()
+        when 'About'            then post.toMain 'showAbout'
+        when 'Clear'            then post.toMain 'clearBuffer'
+        when 'Save'             then post.toMain 'saveBuffer'
+        when 'Quit'             then post.toMain 'quitClippo'
+        when 'Toggle Scheme'    then scheme.toggle()
+    
+$("#main").addEventListener "contextmenu", (event) ->
     
     absPos = pos event
     if not absPos?
         absPos = pos $('main').getBoundingClientRect().left, $('main').getBoundingClientRect().top
         
-    # log 'contextmenu', absPos
+    log 'contextmenu', absPos
     
     opt = items: [
         text:   'Clear'
@@ -146,11 +155,11 @@ window.onunload = -> document.onkeydown = null
 
 document.onkeydown = (event) ->
 
+    return stopEvent(event) if 'unhandled' != window.titlebar.handleKey event, true
+    
     { mod, key, combo } = keyinfo.forEvent event
 
     switch combo
-        when 'k', 'command+k', 'ctrl+k'             then return ipc.send 'clearBuffer'
-        when 'i', 'command+i', 'ctrl+i', 'alt+i'    then return scheme.toggle()
         when 'esc'                                  then return ipc.send 'closeWin'
         when 'down', 'right'                        then return highlight current-1
         when 'up'  , 'left'                         then return highlight current+1
@@ -161,5 +170,5 @@ document.onkeydown = (event) ->
 
 prefs.init()
 scheme.set prefs.get 'scheme', 'dark'
-setTitleBar()
+
 loadBuffers ipc.sendSync 'getBuffers'

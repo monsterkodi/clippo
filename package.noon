@@ -1,6 +1,6 @@
 name            clippo
 productName     clippo
-version         1.11.1
+version         1.12.0
 description     clipboard tool
 main            js/main.js
 repository
@@ -20,16 +20,16 @@ license         Unlicense
 bugs
                 url  https://github.com/monsterkodi/clippo/issues
 dependencies
-                chokidar        ^1.6.1
-                html-entities   ^1.2.0
-                kxk             ^0.72.0
+                chokidar        ^2.0.3
+                html-entities   ^1.2.1
+                kxk             ^0.86.0
                 opener          ^1.4.3
 optionalDependencies
-                simple-plist    ^0.2.1
+                simple-plist    ^0.3.0
                 active-win      ^3.0.0
                 clipboard-watch  ^1.0.2
                 win-icon-extractor  ^1.0.4
 devDependencies
-                electron        ^1.8.2
-                electron-packager  ^8.5.2
-                electron-rebuild  ^1.5.7
+                electron        ^2.0.2
+                electron-packager  ^12.1.0
+                electron-rebuild  ^1.7.3
