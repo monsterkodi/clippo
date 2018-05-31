@@ -1,49 +1,46 @@
+/*
+0000000    00000000   000   0000000   000   000  000000000  
+000   000  000   000  000  000        000   000     000     
+0000000    0000000    000  000  0000  000000000     000     
+000   000  000   000  000  000   000  000   000     000     
+0000000    000   000  000   0000000   000   000     000     
+*/
 
-// 0000000    00000000   000   0000000   000   000  000000000  
-// 000   000  000   000  000  000        000   000     000     
-// 0000000    0000000    000  000  0000  000000000     000     
-// 000   000  000   000  000  000   000  000   000     000     
-// 0000000    000   000  000   0000000   000   000     000     
+frameWidth      = 6px
+frameColor      = #fff
+bgColor         = #eee
+titleColor      = #ddd
+titleRedColor   = #f00
+textFocusColor  = #000
+textBlurColor   = #888
+frameBorder     = frameWidth solid frameColor
 
-frameWidth  = 6px
-frameColor  = #fff
-titleColor  = #ddd
-backColor   = #fff
-bgColor     = #eee
-frameBorder = frameWidth solid frameColor
-
-.titlebar
-    background          frameColor
-    color               #888
-
-.titlebarDot
-    color               #eee
-
-.titlebarVersion
-    color               #ddd
+// 00     00   0000000   000  000   000  
+// 000   000  000   000  000  0000  000  
+// 000000000  000000000  000  000 0 000  
+// 000 0 000  000   000  000  000  0000  
+// 000   000  000   000  000  000   000  
 
 #main
     border-left         frameBorder
     border-right        frameBorder
     border-bottom       frameBorder
     background          bgColor
-    color               #333
 
 pre
-    background          #fff
-    color               #666
+    background          frameColor
 
 .current 
-    background          #fff
+    background          frameColor
     & pre
-        color           #000
+        color           textFocusColor
 
 .current .image      
 .image:hover
-    border              1px solid #000
+    border              1px solid textFocusColor
                 
 .info 
-    color               #888
+    color               textBlurColor
 
 // 000000000  000  000000000  000      00000000  0000000     0000000   00000000
 //    000     000     000     000      000       000   000  000   000  000   000
@@ -52,41 +49,23 @@ pre
 //    000     000     000     0000000  00000000  0000000    000   000  000   000
 
 #titlebar
-    background          backColor
-    color               #333
+    background          frameColor
 
-.dot:hover
-    color               #f00
-
-#titlebar .winid
-    color               #555
-    &.focus
-        color           #080
-
-#titlebar .winnum
-    color               backColor
-
-#titlebar.focus .winnum
+.titlebar-version
     color               titleColor
 
-.tooltip
-    background          frameColor
-    
-.titlebar-version
-    color               #ddd
-
 .titlebar-dot
-    color               #eee
+    color               bgColor
     
 #titlebar .winbutton
-    color               #ddd
+    color               titleColor
     &:active
-        color           #000
-        background-color #f00
+        color           textFocusColor
+        background-color titleRedColor
         &.gray
-            background-color #ccc
+            background-color titleColor
     &:hover
-        color           #000
+        color           textFocusColor
     
 // 00     00  00000000  000   000  000   000  
 // 000   000  000       0000  000  000   000  
@@ -95,16 +74,14 @@ pre
 // 000   000  00000000  000   000   0000000   
             
 .menuItem
-    color               #888
-    background-color    frameColor // titleColor // #222
+    color               textBlurColor
+    background-color    frameColor
     
 .menuItem.selected
-    color               #000
+    color               textFocusColor
     
-.menu:focus .menuItem
-    color               #444
 .menu:focus .menuItem.selected
-    color               #000
+    color               textFocusColor
     
 // 00000000    0000000   00000000   000   000  00000000
 // 000   000  000   000  000   000  000   000  000   000
@@ -119,21 +96,21 @@ pre
     background-color    frameColor
 
 .popupItem
-    color               #888
+    color               textBlurColor
     &:not(:last-child)
-        border-bottom       1px solid frameColor
+        border-bottom   1px solid frameColor
     &.separator
-        border-top          1px solid titleColor
+        border-top      1px solid titleColor
     &.selected
-        color           #000
+        color           textFocusColor
         & .popupCombo
-            color       #ccc
+            color       textBlurColor
 
 .popupItem:active
-    color               #000
+    color               textFocusColor
 
 .popupCombo
-    color               #eee
+    color               bgColor
     
 //  0000000   0000000  00000000    0000000   000      000      
 // 000       000       000   000  000   000  000      000      
@@ -142,12 +119,12 @@ pre
 // 0000000    0000000  000   000   0000000   0000000  0000000  
 
 ::-webkit-scrollbar-corner
-    background-color        bgCoor
+    background-color    bgColor
 
 ::-webkit-scrollbar-thumb
-    background-color        #ddd
+    background-color    textBlurColor
         
 ::-webkit-scrollbar-thumb:hover
-    background-color        #000
+    background-color    textFocusColor
 
     

@@ -5,47 +5,49 @@
 // 000   000  000   000  000   000  000  000   
 // 0000000    000   000  000   000  000   000  
 
-frameWidth  = 6px
-frameColor  = #222
-frameBorder = frameWidth solid frameColor
+frameWidth          = 6px
+
+preColor            = #000
+bgColor             = #181818
+frameColor          = #222
+scrollHoverColor    = #b00
+titleRedColor       = #f00
+titleColor          = #333
+scrollColor         = #444
+textBlurColor       = #666
+textFocusColor      = #fff
+
+frameBorder         = frameWidth solid frameColor
 
 body
-    background          #222
-    color               #fff
+    background          frameColor
+    color               textFocusColor
 
-.titlebar
-    background          #333
-    color               #aaa
-
-.titlebarDot
-    color               #444
-
-.titlebarVersion
-    color               #555
+// 00     00   0000000   000  000   000  
+// 000   000  000   000  000  0000  000  
+// 000000000  000000000  000  000 0 000  
+// 000 0 000  000   000  000  000  0000  
+// 000   000  000   000  000  000   000  
 
 #main
     border-left         frameBorder
     border-right        frameBorder
     border-bottom       frameBorder
     
-    background          #181818
-    color               #aaa
+    background          bgColor
 
 pre
-    background          #000
+    background          preColor
 
 .current 
-    background          #000
+    background          preColor
     & pre
-        color           #fff
+        color           textFocusColor
         
 .current .image
 .image:hover
-    border              1px solid #fff
+    border              1px solid textFocusColor
                 
-.info 
-    color               #888
-
 // 000000000  000  000000000  000      00000000  0000000     0000000   00000000   
 //    000     000     000     000      000       000   000  000   000  000   000  
 //    000     000     000     000      0000000   0000000    000000000  0000000    
@@ -54,23 +56,22 @@ pre
 
 #titlebar
     background          frameColor
-    color               #aaa
 
 .titlebar-version
-    color               #555
+    color               textBlurColor
 
 .titlebar-dot
-    color               #333
+    color               titleColor
 
 #titlebar .winbutton
-    color               #555
+    color               textBlurColor
     &:active
-        color           #fff
-        background-color #f00
+        color           textFocusColor
+        background-color titleRedColor
         &.gray
-            background-color #666
+            background-color titleColor
     &:hover
-        color           #fff
+        color           textFocusColor
     
 // 00     00  00000000  000   000  000   000  
 // 000   000  000       0000  000  000   000  
@@ -79,16 +80,14 @@ pre
 // 000   000  00000000  000   000   0000000   
             
 .menuItem
-    color               #444
-    background-color    titleColor // #222
+    color               textBlurColor
+    background-color    frameColor
     
 .menuItem.selected
-    color               #666
+    color               textFocusColor
     
-.menu:focus .menuItem
-    color               #888
 .menu:focus .menuItem.selected
-    color               #fff
+    color               textFocusColor
     
 // 00000000    0000000   00000000   000   000  00000000
 // 000   000  000   000  000   000  000   000  000   000
@@ -97,29 +96,26 @@ pre
 // 000         0000000   000         0000000   000
 
 .popup
-    background-color    #222
+    background-color    frameColor
 
 .popupWindow
-    background-color    #222
+    background-color    frameColor
 
 .popupItem
-    color               #888
+    color               textBlurColor
     &:not(:last-child)
-        border-bottom       1px solid #222
+        border-bottom   1px solid frameColor
     &.selected
-        color           #fff
+        color           textFocusColor
         & .popupCombo
-            color       #888
+            color       textBlurColor
     &.separator
-        border-top          1px solid #333
+        border-top      1px solid titleColor
     &:not(:last-child)
-        border-bottom       1px solid #222
-
-.popupItem:active
-    color               #ff0
+        border-bottom   1px solid frameColor
 
 .popupCombo
-    color               #444
+    color               titleColor
     
 //  0000000   0000000  00000000    0000000   000      000     
 // 000       000       000   000  000   000  000      000     
@@ -128,12 +124,12 @@ pre
 // 0000000    0000000  000   000   0000000   0000000  0000000 
 
 ::-webkit-scrollbar-corner
-    background-color        #222
+    background-color        frameColor
 
 ::-webkit-scrollbar-thumb
-    background-color        #2d2d2d
+    background-color        scrollColor
     
 ::-webkit-scrollbar-thumb:hover
-    background-color        #b00
+    background-color        scrollHoverColor
 
     
