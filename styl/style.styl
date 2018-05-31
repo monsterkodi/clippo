@@ -37,68 +37,26 @@ body
     -webkit-user-select none
     -webkit-app-region  no-drag
 
-// 000000000  000  000000000  000      00000000  0000000     0000000   00000000 
-//    000     000     000     000      000       000   000  000   000  000   000
-//    000     000     000     000      0000000   0000000    000000000  0000000  
-//    000     000     000     000      000       000   000  000   000  000   000
-//    000     000     000     0000000  00000000  0000000    000   000  000   000
-
-.titlebar
-    height              titlebarHeight
-    box-sizing          border-box
-    font-size           13px
-    padding-top         4px
-    padding-left        70px
-    padding-right       70px
-    white-space         nowrap
-    -webkit-app-region  drag
-    position            static
-    display             block
-
-.titlebarDot
-    position            relative
-    bottom              1px
-
-// 00000000    0000000   00000000   000   000  00000000
-// 000   000  000   000  000   000  000   000  000   000
-// 00000000   000   000  00000000   000   000  00000000
-// 000        000   000  000        000   000  000
-// 000         0000000   000         0000000   000
-
-.popup
-    position            absolute
-    border-radius       3px
-
-.popupItem
-    padding             2px
-    padding-left        2 * frameWidth
-    padding-right       2 * frameWidth + 70px
-    cursor              pointer
-    &:last-child
-        padding-bottom  frameWidth
-    &:first-child
-        padding-top     frameWidth
-
-.popupCombo
-    position            absolute
-    right               2 * frameWidth
-    
 // 00     00   0000000   000  000   000  
 // 000   000  000   000  000  0000  000  
 // 000000000  000000000  000  000 0 000  
 // 000 0 000  000   000  000  000  0000  
 // 000   000  000   000  000  000   000  
 
-.main
+#main
     position            absolute
     bottom              0
     right               0
     left                0
-    top                 titlebarHeight
     overflow            auto
     pointer-events      auto
     -webkit-user-select text
-
+    top                 titlebarHeight
+    padding             frameWidth
+    border-left         frameWidth solid frameColor
+    border-right        frameWidth solid frameColor
+    border-bottom       frameWidth solid frameColor
+    
 #buffer
     position            absolute
 

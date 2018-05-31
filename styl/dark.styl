@@ -28,7 +28,6 @@ body
     border-right        frameBorder
     border-bottom       frameBorder
     
-.main
     background          #181818
     color               #aaa
 
@@ -47,6 +46,50 @@ pre
 .info 
     color               #888
 
+// 000000000  000  000000000  000      00000000  0000000     0000000   00000000   
+//    000     000     000     000      000       000   000  000   000  000   000  
+//    000     000     000     000      0000000   0000000    000000000  0000000    
+//    000     000     000     000      000       000   000  000   000  000   000  
+//    000     000     000     0000000  00000000  0000000    000   000  000   000  
+
+#titlebar
+    background          frameColor
+    color               #aaa
+
+.titlebar-version
+    color               #555
+
+.titlebar-dot
+    color               #333
+
+#titlebar .winbutton
+    color               #555
+    &:active
+        color           #fff
+        background-color #f00
+        &.gray
+            background-color #666
+    &:hover
+        color           #fff
+    
+// 00     00  00000000  000   000  000   000  
+// 000   000  000       0000  000  000   000  
+// 000000000  0000000   000 0 000  000   000  
+// 000 0 000  000       000  0000  000   000  
+// 000   000  00000000  000   000   0000000   
+            
+.menuItem
+    color               #444
+    background-color    titleColor // #222
+    
+.menuItem.selected
+    color               #666
+    
+.menu:focus .menuItem
+    color               #888
+.menu:focus .menuItem.selected
+    color               #fff
+    
 // 00000000    0000000   00000000   000   000  00000000
 // 000   000  000   000  000   000  000   000  000   000
 // 00000000   000   000  00000000   000   000  00000000
@@ -56,12 +99,21 @@ pre
 .popup
     background-color    #222
 
+.popupWindow
+    background-color    #222
+
 .popupItem
     color               #888
     &:not(:last-child)
         border-bottom       1px solid #222
     &.selected
         color           #fff
+        & .popupCombo
+            color       #888
+    &.separator
+        border-top          1px solid #333
+    &:not(:last-child)
+        border-bottom       1px solid #222
 
 .popupItem:active
     color               #ff0

@@ -6,7 +6,7 @@
  0000000  0000000  000  000        000         0000000
 ###
 
-{ keyinfo, title, scheme, prefs, slash, post, stopEvent, elem, popup, pos, str, log, $ } = require 'kxk'
+{ keyinfo, title, scheme, prefs, slash, post, stopEvent, elem, popup, pos, str, log, $, _ } = require 'kxk'
 
 pkg       = require '../package.json'
 electron  = require 'electron'
@@ -112,38 +112,26 @@ post.on 'menuAction', (action) ->
         when 'Save'             then post.toMain 'saveBuffer'
         when 'Quit'             then post.toMain 'quitClippo'
         when 'Toggle Scheme'    then scheme.toggle()
-    
+
+#  0000000   0000000   000   000  000000000  00000000  000   000  000000000  
+# 000       000   000  0000  000     000     000        000 000      000     
+# 000       000   000  000 0 000     000     0000000     00000       000     
+# 000       000   000  000  0000     000     000        000 000      000     
+#  0000000   0000000   000   000     000     00000000  000   000     000     
+
 $("#main").addEventListener "contextmenu", (event) ->
     
     absPos = pos event
     if not absPos?
-        absPos = pos $('main').getBoundingClientRect().left, $('main').getBoundingClientRect().top
+        absPos = pos $("#main").getBoundingClientRect().left, $("#main").getBoundingClientRect().top
+       
+    items = _.clone window.titlebar.menuTemplate()
+    items.unshift text:'Clear', accel:'ctrl+k'
         
-    log 'contextmenu', absPos
-    
-    opt = items: [
-        text:   'Clear'
-        combo:  'k' 
-        cb:     -> ipc.send 'clearBuffer'
-    ,
-        text:   'Show Menu'
-        combo:  'alt'
-        cb:     -> electron.remote.getCurrentWindow().setMenuBarVisibility true
-        hide:   not slash.win()
-    ,
-        text:   'About'
-        combo:  'ctrl+.'
-        cb:      -> ipc.send 'showAbout'
-    ,
-        text:   'Quit'
-        combo:  'ctrl+q' 
-        cb:     -> ipc.send 'quitClippo'
-    ]
-    
-    opt.x = absPos.x
-    opt.y = absPos.y
-
-    popup.menu opt
+    popup.menu
+        items:  items
+        x:      absPos.x
+        y:      absPos.y
     
 window.onunload = -> document.onkeydown = null
 

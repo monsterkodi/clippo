@@ -7,6 +7,8 @@
 
 frameWidth  = 6px
 frameColor  = #fff
+titleColor  = #ddd
+backColor   = #fff
 bgColor     = #eee
 frameBorder = frameWidth solid frameColor
 
@@ -24,8 +26,6 @@ frameBorder = frameWidth solid frameColor
     border-left         frameBorder
     border-right        frameBorder
     border-bottom       frameBorder
-    
-.main
     background          bgColor
     color               #333
 
@@ -45,6 +45,67 @@ pre
 .info 
     color               #888
 
+// 000000000  000  000000000  000      00000000  0000000     0000000   00000000
+//    000     000     000     000      000       000   000  000   000  000   000
+//    000     000     000     000      0000000   0000000    000000000  0000000
+//    000     000     000     000      000       000   000  000   000  000   000
+//    000     000     000     0000000  00000000  0000000    000   000  000   000
+
+#titlebar
+    background          backColor
+    color               #333
+
+.dot:hover
+    color               #f00
+
+#titlebar .winid
+    color               #555
+    &.focus
+        color           #080
+
+#titlebar .winnum
+    color               backColor
+
+#titlebar.focus .winnum
+    color               titleColor
+
+.tooltip
+    background          frameColor
+    
+.titlebar-version
+    color               #ddd
+
+.titlebar-dot
+    color               #eee
+    
+#titlebar .winbutton
+    color               #ddd
+    &:active
+        color           #000
+        background-color #f00
+        &.gray
+            background-color #ccc
+    &:hover
+        color           #000
+    
+// 00     00  00000000  000   000  000   000  
+// 000   000  000       0000  000  000   000  
+// 000000000  0000000   000 0 000  000   000  
+// 000 0 000  000       000  0000  000   000  
+// 000   000  00000000  000   000   0000000   
+            
+.menuItem
+    color               #888
+    background-color    frameColor // titleColor // #222
+    
+.menuItem.selected
+    color               #000
+    
+.menu:focus .menuItem
+    color               #444
+.menu:focus .menuItem.selected
+    color               #000
+    
 // 00000000    0000000   00000000   000   000  00000000
 // 000   000  000   000  000   000  000   000  000   000
 // 00000000   000   000  00000000   000   000  00000000
@@ -54,18 +115,25 @@ pre
 .popup
     background-color    frameColor
 
+.popupWindow
+    background-color    frameColor
+
 .popupItem
     color               #888
     &:not(:last-child)
         border-bottom       1px solid frameColor
+    &.separator
+        border-top          1px solid titleColor
     &.selected
         color           #000
+        & .popupCombo
+            color       #ccc
 
 .popupItem:active
     color               #000
 
 .popupCombo
-    color               #888
+    color               #eee
     
 //  0000000   0000000  00000000    0000000   000      000      
 // 000       000       000   000  000   000  000      000      
