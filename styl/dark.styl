@@ -1,41 +1,13 @@
-
-// 0000000     0000000   00000000   000   000  
-// 000   000  000   000  000   000  000  000   
-// 000   000  000000000  0000000    0000000    
-// 000   000  000   000  000   000  000  000   
-// 0000000    000   000  000   000  000   000  
-
-frameWidth          = 6px
+/*
+0000000     0000000   00000000   000   000  
+000   000  000   000  000   000  000  000   
+000   000  000000000  0000000    0000000    
+000   000  000   000  000   000  000  000   
+0000000    000   000  000   000  000   000  
+*/
 
 preColor            = #000
-bgColor             = #181818
-frameColor          = #222
-scrollHoverColor    = #b00
-titleRedColor       = #f00
-titleColor          = #333
-scrollColor         = #444
-textBlurColor       = #666
-textActiveColor     = #999
 textFocusColor      = #fff
-
-frameBorder         = frameWidth solid frameColor
-
-body
-    background          frameColor
-    color               textFocusColor
-
-// 00     00   0000000   000  000   000  
-// 000   000  000   000  000  0000  000  
-// 000000000  000000000  000  000 0 000  
-// 000 0 000  000   000  000  000  0000  
-// 000   000  000   000  000  000   000  
-
-#main
-    border-left         frameBorder
-    border-right        frameBorder
-    border-bottom       frameBorder
-    
-    background          bgColor
 
 pre
     background          preColor
@@ -49,95 +21,3 @@ pre
 .image:hover
     border              1px solid textFocusColor
                 
-// 000000000  000  000000000  000      00000000  0000000     0000000   00000000   
-//    000     000     000     000      000       000   000  000   000  000   000  
-//    000     000     000     000      0000000   0000000    000000000  0000000    
-//    000     000     000     000      000       000   000  000   000  000   000  
-//    000     000     000     0000000  00000000  0000000    000   000  000   000  
-
-#titlebar
-    background          frameColor
-
-.titlebar-name
-    color               textActiveColor
-
-.titlebar-version
-    color               scrollColor
-
-.titlebar-dot
-    color               titleColor
-
-#titlebar .winbutton
-    &:active
-        background-color titleRedColor
-        &.gray
-            background-color titleColor
-
-#titlebar .winbutton svg
-    stroke-width        1px
-    stroke              textBlurColor
-#titlebar .winbutton:active svg    
-    stroke              textFocusColor
-#titlebar .winbutton:hover svg    
-    stroke              textFocusColor
-        
-// 00     00  00000000  000   000  000   000  
-// 000   000  000       0000  000  000   000  
-// 000000000  0000000   000 0 000  000   000  
-// 000 0 000  000       000  0000  000   000  
-// 000   000  00000000  000   000   0000000   
-            
-.menuItem
-    color               textBlurColor
-    background-color    frameColor
-    
-.menuItem.selected
-    color               textActiveColor
-    
-.menu:focus .menuItem.selected
-    color               textFocusColor
-    
-// 00000000    0000000   00000000   000   000  00000000
-// 000   000  000   000  000   000  000   000  000   000
-// 00000000   000   000  00000000   000   000  00000000
-// 000        000   000  000        000   000  000
-// 000         0000000   000         0000000   000
-
-.popup
-    background-color    frameColor
-
-.popupWindow
-    background-color    frameColor
-
-.popupItem
-    color               textBlurColor
-    &:not(:last-child)
-        border-bottom   1px solid frameColor
-    &.selected
-        color           textFocusColor
-        & .popupCombo
-            color       textBlurColor
-    &.separator
-        border-top      1px solid titleColor
-    &:not(:last-child)
-        border-bottom   1px solid frameColor
-
-.popupCombo
-    color               titleColor
-    
-//  0000000   0000000  00000000    0000000   000      000     
-// 000       000       000   000  000   000  000      000     
-// 0000000   000       0000000    000   000  000      000     
-//      000  000       000   000  000   000  000      000     
-// 0000000    0000000  000   000   0000000   0000000  0000000 
-
-::-webkit-scrollbar-corner
-    background-color        frameColor
-
-::-webkit-scrollbar-thumb
-    background-color        scrollColor
-    
-::-webkit-scrollbar-thumb:hover
-    background-color        scrollHoverColor
-
-    

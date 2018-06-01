@@ -16,6 +16,8 @@ ipc       = electron.ipcRenderer
 current   = 0
 buffers   = []
 
+prefs.init()
+
 doPaste = -> ipc.send 'paste', current
 
 # 000   000  000   0000000   000   000  000      000   0000000   000   000  000000000
@@ -57,9 +59,7 @@ $('main').addEventListener "mouseover", (event) ->
 
 ipc.on "loadBuffers", (event, buffs, index) -> loadBuffers buffs, index
 
-post.on 'schemeChanged', -> 
-    log 'schemeChanged'
-    loadBuffers buffers, current
+post.on 'schemeChanged', -> loadBuffers buffers, current
 
 loadBuffers = (buffs, index) ->
 
@@ -103,16 +103,6 @@ window.titlebar = new title
     menu:   __dirname + '/../coffee/menu.noon' 
     icon:   __dirname + '/../img/menu@2x.png'
     
-post.on 'menuAction', (action) ->
-
-    switch action
-        when 'Close'            then window.close()
-        when 'About'            then post.toMain 'showAbout'
-        when 'Clear'            then post.toMain 'clearBuffer'
-        when 'Save'             then post.toMain 'saveBuffer'
-        when 'Quit'             then post.toMain 'quitClippo'
-        when 'Toggle Scheme'    then scheme.toggle()
-
 #  0000000   0000000   000   000  000000000  00000000  000   000  000000000  
 # 000       000   000  0000  000     000     000        000 000      000     
 # 000       000   000  000 0 000     000     0000000     00000       000     
@@ -133,14 +123,13 @@ $("#main").addEventListener "contextmenu", (event) ->
         x:      absPos.x
         y:      absPos.y
     
-window.onunload = -> document.onkeydown = null
-
 # 000   000  00000000  000   000
 # 000  000   000        000 000
 # 0000000    0000000     00000
 # 000  000   000          000
 # 000   000  00000000     000
 
+window.onunload = -> document.onkeydown = null
 document.onkeydown = (event) ->
 
     return stopEvent(event) if 'unhandled' != window.titlebar.handleKey event, true
@@ -156,7 +145,20 @@ document.onkeydown = (event) ->
         when 'enter', 'command+v', 'ctrl+v'         then return doPaste()
         when 'backspace', 'command+backspace', 'ctrl+backspace', 'delete' then return ipc.send 'del', current
 
-prefs.init()
+# 00     00  00000000  000   000  000   000   0000000    0000000  000000000  000   0000000   000   000  
+# 000   000  000       0000  000  000   000  000   000  000          000     000  000   000  0000  000  
+# 000000000  0000000   000 0 000  000   000  000000000  000          000     000  000   000  000 0 000  
+# 000 0 000  000       000  0000  000   000  000   000  000          000     000  000   000  000  0000  
+# 000   000  00000000  000   000   0000000   000   000   0000000     000     000   0000000   000   000  
+
+post.on 'menuAction', (action) ->
+
+    switch action
+        when 'About'            then post.toMain 'showAbout'
+        when 'Clear'            then post.toMain 'clearBuffer'
+        when 'Save'             then post.toMain 'saveBuffer'
+        when 'Quit'             then post.toMain 'quitClippo'
+        
 scheme.set prefs.get 'scheme', 'dark'
 
 loadBuffers ipc.sendSync 'getBuffers'
