@@ -7,12 +7,14 @@
 */
 
 frameWidth      = 6px
+
 frameColor      = #fff
 bgColor         = #eee
 titleColor      = #ddd
 titleRedColor   = #f00
 textFocusColor  = #000
 textBlurColor   = #888
+
 frameBorder     = frameWidth solid frameColor
 
 // 00     00   0000000   000  000   000  
@@ -58,15 +60,19 @@ pre
     color               bgColor
     
 #titlebar .winbutton
-    color               titleColor
     &:active
-        color           textFocusColor
         background-color titleRedColor
         &.gray
-            background-color titleColor
-    &:hover
-        color           textFocusColor
-    
+            background-color bgColor
+
+#titlebar .winbutton svg
+    stroke-width        1px
+    stroke              titleColor
+#titlebar .winbutton:active svg    
+    stroke              textFocusColor
+#titlebar .winbutton:hover svg    
+    stroke              textFocusColor
+        
 // 00     00  00000000  000   000  000   000  
 // 000   000  000       0000  000  000   000  
 // 000000000  0000000   000 0 000  000   000  

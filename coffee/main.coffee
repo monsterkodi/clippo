@@ -293,11 +293,11 @@ createWindow = ->
         maximizable:     true
         minimizable:     true
         autoHideMenuBar: true
+        transparent:     true
         fullscreen:      false
         fullscreenable:  false
         show:            false
         frame:           false
-        titleBarStyle:   'hidden'
         
     bounds = prefs.get 'bounds'
     win.setBounds bounds if bounds?
