@@ -22,7 +22,7 @@ bugs
 dependencies
                 chokidar        ^2.0.3
                 html-entities   ^1.2.1
-                kxk             ^0.125.0
+                kxk             https://github.com/monsterkodi/kxk.git
                 opener          ^1.4.3
 optionalDependencies
                 simple-plist    ^0.3.0

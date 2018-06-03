@@ -53,10 +53,6 @@ post.on 'clearBuffer', -> clearBuffer()
 post.on 'saveBuffer',  -> saveBuffer()
 post.on 'quitClippo',  -> quitClippo()
 
-log.slog.osc = true
-log.slog.id  = 'clippo-app'
-# post.on 'slog', (logs, info) -> console.log 'slog', log.slog.osc, logs, info
-
 # 0000000    0000000  000000000  000  000   000  00000000
 #000   000  000          000     000  000   000  000
 #000000000  000          000     000   000 000   0000000

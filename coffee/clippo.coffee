@@ -11,9 +11,6 @@
 pkg       = require '../package.json'
 electron  = require 'electron'
 
-log.slog.osc  = true
-log.slog.id   = 'clippo-win'
-
 clipboard = electron.clipboard
 ipc       = electron.ipcRenderer
 current   = 0
