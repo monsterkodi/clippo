@@ -4,10 +4,7 @@
 #000   000  000        000        000  000       000   000  000  0000       000     000     000  0000  000     
 #000   000  000        000        000   0000000   0000000   000   000  0000000      000     000   000   0000000
 
-{ escapePath, resolve, childp, fs }       = require 'kxk' 
-
-plist   = require 'simple-plist'
-childp  = require 'child_process'
+{ escapePath, resolve, childp, slash, childp, fs } = require 'kxk' 
 
 module.exports = (appName, outDir=".", size=1024) ->
 
@@ -24,7 +21,8 @@ module.exports = (appName, outDir=".", size=1024) ->
         try
             infoPath = slash.join conPath, 'Info.plist'
             fs.accessSync infoPath, fs.R_OK
-            obj = plist.readFileSync infoPath
+            splist = require 'simple-plist'
+            obj = splist.readFileSync infoPath
             if obj['CFBundleIconFile']?
                 icnsPath = slash.join slash.dirname(infoPath), 'Resources', obj['CFBundleIconFile']
                 icnsPath += ".icns" if not icnsPath.endsWith '.icns'

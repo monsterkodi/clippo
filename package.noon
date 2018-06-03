@@ -1,14 +1,14 @@
 name            clippo
 productName     clippo
-version         1.18.0
+version         1.19.0
 description     clipboard tool
 main            js/main.js
 repository
                 type  git
                 url   git+https://github.com/monsterkodi/clippo.git
 scripts
-                build   ./bin/build.sh
-                win     bash ./bin/buildwin.sh
+                mac   ./bin/buildmac.sh
+                win   bash ./bin/buildwin.sh
 keywords
                 copy
                 paste
@@ -22,7 +22,7 @@ bugs
 dependencies
                 chokidar        ^2.0.3
                 html-entities   ^1.2.1
-                kxk             ^0.100.0
+                kxk             ^0.125.0
                 opener          ^1.4.3
 optionalDependencies
                 simple-plist    ^0.3.0
