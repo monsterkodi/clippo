@@ -42,10 +42,20 @@ ipc.on 'paste', (event, index) -> pasteIndex index
 ipc.on 'del',   (event, index) -> deleteIndex index
 ipc.on 'getBuffers', (event)   -> event.returnValue = buffers
 
+# 00000000    0000000    0000000  000000000  
+# 000   000  000   000  000          000     
+# 00000000   000   000  0000000      000     
+# 000        000   000       000     000     
+# 000         0000000   0000000      000     
+
 post.on 'showAbout',   -> showAbout()
 post.on 'clearBuffer', -> clearBuffer()
 post.on 'saveBuffer',  -> saveBuffer()
 post.on 'quitClippo',  -> quitClippo()
+
+log.slog.osc = true
+log.slog.id  = 'clippo-app'
+# post.on 'slog', (logs, info) -> console.log 'slog', log.slog.osc, logs, info
 
 # 0000000    0000000  000000000  000  000   000  00000000
 #000   000  000          000     000  000   000  000
@@ -227,6 +237,7 @@ watchClipboard = ->
 
 copyIndex = (index) ->
     
+    log 'copyIndex', index
     return if (index < 0) or (index > buffers.length-1)
     if buffers[index].image
         image = nativeImage.createFromBuffer new Buffer buffers[index].image, 'base64'
@@ -243,6 +254,7 @@ copyIndex = (index) ->
 
 pasteIndex = (index) ->
     
+    log 'pasteIndex', index
     copyIndex index
     originApp = buffers.splice(index, 1)[0]?.app
     paste = () ->
@@ -338,6 +350,7 @@ reload = (index=0) -> win?.webContents.send 'loadBuffers', buffers, index
 
 clearBuffer = ->
 
+    log 'clearBuffer'
     buffers = []
     saveBuffer()
     reload()

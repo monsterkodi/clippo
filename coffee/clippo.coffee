@@ -11,6 +11,9 @@
 pkg       = require '../package.json'
 electron  = require 'electron'
 
+log.slog.osc  = true
+log.slog.id   = 'clippo-win'
+
 clipboard = electron.clipboard
 ipc       = electron.ipcRenderer
 current   = 0
@@ -99,9 +102,10 @@ loadBuffers = (buffs, index) ->
 #    000     000     000     0000000  00000000  
 
 window.titlebar = new title 
+    dir:    __dirname
     pkg:    pkg 
-    menu:   __dirname + '/../coffee/menu.noon' 
-    icon:   __dirname + '/../img/menu@2x.png'
+    menu:   '../coffee/menu.noon' 
+    icon:   '../img/menu@2x.png'
     
 #  0000000   0000000   000   000  000000000  00000000  000   000  000000000  
 # 000       000   000  0000  000     000     000        000 000      000     
@@ -111,6 +115,7 @@ window.titlebar = new title
 
 $("#main").addEventListener "contextmenu", (event) ->
     
+    log 'contextmenu'
     absPos = pos event
     if not absPos?
         absPos = pos $("#main").getBoundingClientRect().left, $("#main").getBoundingClientRect().top
