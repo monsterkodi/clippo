@@ -9,4 +9,4 @@ konrad --run
 IGNORE="/(.*\.dmg$|Icon$|watch$|coffee$|icons$|.*md$|pug$|styl$|.*\.noon$|.*\.lock$|img/banner\.png)"
 
 # --no-prune needed because of problem with plist. fix me!
-node_modules/electron-packager/cli.js . --no-prune --overwrite --icon=img/clippo.icns --ignore=$IGNORE
+node_modules/electron-packager/cli.js . --no-prune --overwrite --icon=img/app.icns --ignore=$IGNORE

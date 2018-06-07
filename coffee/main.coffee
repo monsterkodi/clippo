@@ -6,8 +6,8 @@
 000   000  000   000  000  000   000
 ###
 
-{ osascript, prefs, post, empty, slash, about, noon, childp, log, fs, _ } = require 'kxk'
-
+{ post, app, osascript, prefs, empty, slash, noon, childp, log, fs, _ } = require 'kxk'
+        
 electron = require 'electron'
 chokidar = require 'chokidar'
 pkg      = require '../package.json'
@@ -15,32 +15,28 @@ pkg      = require '../package.json'
 if not slash.win()
     appIconSync = require './appiconsync'
 
-app           = electron.app
-BrowserWindow = electron.BrowserWindow
-Tray          = electron.Tray
-Menu          = electron.Menu
+app = new app
+    dir:        __dirname
+    pkg:        pkg
+    shortcut:   'CmdOrCtrl+Alt+V'
+    index:      'index.html'
+    icon:       '../img/app.ico'
+    tray:       '../img/menu@2x.png'
+    about:      '../img/about.png'
+    onQuit:     -> quit()
+    width:      1000
+    height:     1200
+    minWidth:   300
+    minHeight:  200
+    # aboutDebug: true
+    
 clipboard     = electron.clipboard
-ipc           = electron.ipcMain
 nativeImage   = electron.nativeImage
-sel           = null
-win           = null
-tray          = null
 buffers       = []
 iconDir       = ""
 activeApp     = ""
 originApp     = null
 clippoWatch   = null
-debug         = false
-
-# 000  00000000    0000000
-# 000  000   000  000
-# 000  00000000   000
-# 000  000        000
-# 000  000         0000000
-
-ipc.on 'paste', (event, index) -> pasteIndex index
-ipc.on 'del',   (event, index) -> deleteIndex index
-ipc.on 'getBuffers', (event)   -> event.returnValue = buffers
 
 # 00000000    0000000    0000000  000000000  
 # 000   000  000   000  000          000     
@@ -48,10 +44,11 @@ ipc.on 'getBuffers', (event)   -> event.returnValue = buffers
 # 000        000   000       000     000     
 # 000         0000000   0000000      000     
 
-post.on 'showAbout',   -> showAbout()
+post.on 'paste',      (event, index) -> pasteIndex index
+post.on 'del',        (event, index) -> deleteIndex index
+post.onGet 'buffers', (event)        -> buffers
 post.on 'clearBuffer', -> clearBuffer()
 post.on 'saveBuffer',  -> saveBuffer()
-post.on 'quitClippo',  -> quitClippo()
 
 # 0000000    0000000  000000000  000  000   000  00000000
 #000   000  000          000     000  000   000  000
@@ -60,6 +57,7 @@ post.on 'quitClippo',  -> quitClippo()
 #000   000   0000000     000     000      0      00000000
 
 getActiveApp = ->
+    
     return if slash.win()
     script = osascript """
     tell application "System Events"
@@ -72,11 +70,13 @@ getActiveApp = ->
     appName
 
 updateActiveApp = ->
+    
     appName = getActiveApp()
-    if appName and appName != app.getName()
+    if appName and appName != electron.app.getName()
         activeApp = appName
 
 activateApp = ->
+    
     return if slash.win()
     if activeApp.length
         try
@@ -151,11 +151,14 @@ readPBjson = (path) ->
 
 winClipboardChanged = ->
 
+    
     activeWin = require 'active-win'
     appName = 'clippo'
 
     winInfo = activeWin.sync()
 
+    log 'winClipboardChanged', winInfo
+    
     if winInfo?.owner?
         appName = slash.base winInfo.owner.name
         exclude = prefs.get 'exclude', ['password-turtle']
@@ -194,6 +197,9 @@ winClipboardChanged = ->
             return
 
     text = clipboard.readText()
+    
+    log 'winClipboardChanged', text
+    
     if text.length and text.trim().length
 
         for b in buffers
@@ -205,8 +211,9 @@ winClipboardChanged = ->
         buffers.push
             app:   appName
             text:  text
-            count: buffers.length
+            count: appName.appName
 
+        log 'winClipboardChanged', buffers.length
         reload buffers.length-1
 
 watchClipboard = ->
@@ -254,7 +261,7 @@ pasteIndex = (index) ->
     copyIndex index
     originApp = buffers.splice(index, 1)[0]?.app
     paste = () ->
-        win.close()
+        app.win.close()
         childp.exec "osascript " + osascript """
         tell application "System Events" to keystroke "v" using command down
         """
@@ -268,102 +275,37 @@ pasteIndex = (index) ->
 #0000000    00000000  0000000
 
 deleteIndex = (index) ->
+    
     buffers.splice index, 1
     reload index-1
 
-#000   000  000  000   000  0000000     0000000   000   000
-#000 0 000  000  0000  000  000   000  000   000  000 0 000
-#000000000  000  000 0 000  000   000  000   000  000000000
-#000   000  000  000  0000  000   000  000   000  000   000
-#00     00  000  000   000  0000000     0000000   00     00
-
-toggleWindow = ->
-    if win?.isVisible()
-        win.hide()
-        app.dock?.hide()
-    else
-        showWindow()
-
-showWindow = ->
-    updateActiveApp()
-    if win?
-        win.show()
-    else
-        createWindow()
-    app.dock?.show()
-
-createWindow = ->
-
-    win = new BrowserWindow
-        width:           1000
-        height:          1200
-        backgroundColor: '#181818'
-        maximizable:     true
-        minimizable:     true
-        autoHideMenuBar: true
-        transparent:     true
-        fullscreen:      false
-        fullscreenable:  false
-        show:            false
-        frame:           false
-        
-    bounds = prefs.get 'bounds'
-    win.setBounds bounds if bounds?
-
-    win.loadURL "file://#{__dirname}/index.html"
-    win.webContents.openDevTools() if debug
-    win.on 'ready-to-show', -> win.show()
-    win.on 'closed', -> win = null
-    win.on 'resize', saveBounds
-    win.on 'move', saveBounds
-    win.on 'close',  ->
-        activateApp()
-        app.dock?.hide()
-    app.dock?.show()
-    win
-
-saveBounds = -> if win? then prefs.set 'bounds', win.getBounds()
-
-showAbout = ->
+quit = ->
     
-    dark = 'dark' == prefs.get 'scheme', 'dark'
-    about
-        img:        "#{__dirname}/../img/about.png"
-        color:      dark and '#383838' or '#ddd'
-        background: dark and '#282828' or '#fff'
-        highlight:  dark and '#fff'    or '#000'
-        pkg:        pkg
-
-quitClippo = ->
-    
-    saveBounds()
     saveBuffer()
     clippoWatch?.kill()
-    app.exit 0
-    process.exit 0
         
-reload = (index=0) -> win?.webContents.send 'loadBuffers', buffers, index
+reload = (index=0) -> 
+
+    post.toWins 'loadBuffers', buffers, index
 
 clearBuffer = ->
 
-    log 'clearBuffer'
+    # log 'clearBuffer'
     buffers = []
     saveBuffer()
     reload()
 
 saveBuffer = ->
 
-    noon.save "#{app.getPath('userData')}/buffers.noon", buffers.slice(- prefs.get('maxBuffers', 50))
+    noon.save "#{app.userData}/buffers.noon", buffers.slice(- prefs.get('maxBuffers', 50))
 
 readBuffer = ->
 
     try
-        buffers = noon.load "#{app.getPath('userData')}/buffers.noon"
+        buffers = noon.load "#{app.userData}/buffers.noon"
         buffers = buffers ? []
     catch
         buffers = []
-
-app.on 'window-all-closed', (event) -> event.preventDefault()
 
 #00000000   00000000   0000000   0000000    000   000
 #000   000  000       000   000  000   000   000 000
@@ -371,33 +313,11 @@ app.on 'window-all-closed', (event) -> event.preventDefault()
 #000   000  000       000   000  000   000     000
 #000   000  00000000  000   000  0000000       000
 
-app.on 'ready', ->
-
-    tray = new Tray "#{__dirname}/../img/menu.png"
-    tray.on 'click', toggleWindow
-    
-    if slash.win()
-        tray.setContextMenu Menu.buildFromTemplate [
-            label: "Quit"
-            click: -> app.exit 0; process.exit 0
-        ,
-            label: "About"
-            click: showAbout
-        ]
-    
-    app.dock?.hide()
-    
-    app.setName pkg.productName
-
-    prefs.init
-        maxBuffers: 50
-        shortcut: 'CmdOrCtrl+Alt+V'
-
-    electron.globalShortcut.register prefs.get('shortcut'), showWindow
+post.on 'appReady', ->
 
     readBuffer()
 
-    iconDir = slash.resolve "#{app.getPath('userData')}/icons"
+    iconDir = slash.resolve "#{app.userData}/icons"
     fs.ensureDirSync iconDir
 
     try
@@ -409,11 +329,4 @@ app.on 'ready', ->
             log "can't copy clippo icon: #{err}"
 
     watchClipboard()
-    if slash.win()
-        showWindow()
-
-app.setName pkg.productName        
         
-if app.makeSingleInstance showWindow
-    app.quit()
-    return

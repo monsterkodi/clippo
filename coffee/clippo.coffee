@@ -6,19 +6,21 @@
  0000000  0000000  000  000        000         0000000
 ###
 
-{ keyinfo, title, scheme, prefs, slash, post, stopEvent, elem, popup, pos, str, log, $, _ } = require 'kxk'
+{ post, win, keyinfo, title, scheme, prefs, slash, stopEvent, elem, popup, pos, str, log, $, _ } = require 'kxk'
 
 pkg       = require '../package.json'
 electron  = require 'electron'
 
-clipboard = electron.clipboard
-ipc       = electron.ipcRenderer
+w = new win 
+    dir:    __dirname
+    pkg:    pkg
+    menu:   '../coffee/menu.noon'
+    icon:   '../img/menu@2x.png'
+    
 current   = 0
 buffers   = []
 
-prefs.init()
-
-doPaste = -> ipc.send 'paste', current
+doPaste = -> post.toMain 'paste', current
 
 # 000   000  000   0000000   000   000  000      000   0000000   000   000  000000000
 # 000   000  000  000        000   000  000      000  000        000   000     000
@@ -57,8 +59,7 @@ $('main').addEventListener "mouseover", (event) ->
 # 000      000   000  000   000  000   000
 # 0000000   0000000   000   000  0000000
 
-ipc.on "loadBuffers", (event, buffs, index) -> loadBuffers buffs, index
-
+post.on 'loadBuffers', (buffs, index) -> loadBuffers buffs, index
 post.on 'schemeChanged', -> loadBuffers buffers, current
 
 loadBuffers = (buffs, index) ->
@@ -91,61 +92,23 @@ loadBuffers = (buffs, index) ->
         i += 1
 
     highlight index ? buffers.length-1
-
-# 000000000  000  000000000  000      00000000  
-#    000     000     000     000      000       
-#    000     000     000     000      0000000   
-#    000     000     000     000      000       
-#    000     000     000     0000000  00000000  
-
-window.titlebar = new title 
-    dir:    __dirname
-    pkg:    pkg 
-    menu:   '../coffee/menu.noon' 
-    icon:   '../img/menu@2x.png'
-    
-#  0000000   0000000   000   000  000000000  00000000  000   000  000000000  
-# 000       000   000  0000  000     000     000        000 000      000     
-# 000       000   000  000 0 000     000     0000000     00000       000     
-# 000       000   000  000  0000     000     000        000 000      000     
-#  0000000   0000000   000   000     000     00000000  000   000     000     
-
-$("#main").addEventListener "contextmenu", (event) ->
-    
-    log 'contextmenu'
-    absPos = pos event
-    if not absPos?
-        absPos = pos $("#main").getBoundingClientRect().left, $("#main").getBoundingClientRect().top
-       
-    items = _.clone window.titlebar.menuTemplate()
-    items.unshift text:'Clear', accel:'ctrl+k'
         
-    popup.menu
-        items:  items
-        x:      absPos.x
-        y:      absPos.y
-    
-# 000   000  00000000  000   000
-# 000  000   000        000 000
-# 0000000    0000000     00000
-# 000  000   000          000
-# 000   000  00000000     000
+#  0000000   0000000   00     00  0000000     0000000   
+# 000       000   000  000   000  000   000  000   000  
+# 000       000   000  000000000  0000000    000   000  
+# 000       000   000  000 0 000  000   000  000   000  
+#  0000000   0000000   000   000  0000000     0000000   
 
-window.onunload = -> document.onkeydown = null
-document.onkeydown = (event) ->
-
-    return stopEvent(event) if 'unhandled' != window.titlebar.handleKey event, true
-    
-    { mod, key, combo } = keyinfo.forEvent event
+post.on 'combo', (combo, info) ->
 
     switch combo
-        when 'esc'                                  then return ipc.send 'closeWin'
+        when 'esc'                                  then return post.toMain 'closeWin'
         when 'down', 'right'                        then return highlight current-1
         when 'up'  , 'left'                         then return highlight current+1
         when 'home', 'page up'                      then return highlight buffers.length-1
         when 'end',  'page down'                    then return highlight 0
         when 'enter', 'command+v', 'ctrl+v'         then return doPaste()
-        when 'backspace', 'command+backspace', 'ctrl+backspace', 'delete' then return ipc.send 'del', current
+        when 'backspace', 'command+backspace', 'ctrl+backspace', 'delete' then return post.toMain 'del', current
 
 # 00     00  00000000  000   000  000   000   0000000    0000000  000000000  000   0000000   000   000  
 # 000   000  000       0000  000  000   000  000   000  000          000     000  000   000  0000  000  
@@ -156,11 +119,7 @@ document.onkeydown = (event) ->
 post.on 'menuAction', (action) ->
 
     switch action
-        when 'About'            then post.toMain 'showAbout'
         when 'Clear'            then post.toMain 'clearBuffer'
         when 'Save'             then post.toMain 'saveBuffer'
-        when 'Quit'             then post.toMain 'quitClippo'
         
-scheme.set prefs.get 'scheme', 'dark'
-
-loadBuffers ipc.sendSync 'getBuffers'
+loadBuffers post.get 'buffers'
