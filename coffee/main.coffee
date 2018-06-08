@@ -7,7 +7,7 @@
 ###
 
 { post, app, osascript, prefs, empty, slash, noon, childp, log, fs, _ } = require 'kxk'
-        
+
 electron = require 'electron'
 chokidar = require 'chokidar'
 pkg      = require '../package.json'
@@ -29,7 +29,7 @@ app = new app
     minWidth:   300
     minHeight:  200
     # aboutDebug: true
-    
+
 clipboard     = electron.clipboard
 nativeImage   = electron.nativeImage
 buffers       = []
@@ -38,11 +38,11 @@ activeApp     = ""
 originApp     = null
 clippoWatch   = null
 
-# 00000000    0000000    0000000  000000000  
-# 000   000  000   000  000          000     
-# 00000000   000   000  0000000      000     
-# 000        000   000       000     000     
-# 000         0000000   0000000      000     
+# 00000000    0000000    0000000  000000000
+# 000   000  000   000  000          000
+# 00000000   000   000  0000000      000
+# 000        000   000       000     000
+# 000         0000000   0000000      000
 
 post.on 'paste',      (event, index) -> pasteIndex index
 post.on 'del',        (event, index) -> deleteIndex index
@@ -57,7 +57,7 @@ post.on 'saveBuffer',  -> saveBuffer()
 #000   000   0000000     000     000      0      00000000
 
 getActiveApp = ->
-    
+
     return if slash.win()
     script = osascript """
     tell application "System Events"
@@ -70,13 +70,13 @@ getActiveApp = ->
     appName
 
 updateActiveApp = ->
-    
+
     appName = getActiveApp()
     if appName and appName != electron.app.getName()
         activeApp = appName
 
 activateApp = ->
-    
+
     return if slash.win()
     if activeApp.length
         try
@@ -151,14 +151,12 @@ readPBjson = (path) ->
 
 winClipboardChanged = ->
 
-    
+
     activeWin = require 'active-win'
     appName = 'clippo'
 
     winInfo = activeWin.sync()
 
-    log 'winClipboardChanged', winInfo
-    
     if winInfo?.owner?
         appName = slash.base winInfo.owner.name
         exclude = prefs.get 'exclude', ['password-turtle']
@@ -197,9 +195,9 @@ winClipboardChanged = ->
             return
 
     text = clipboard.readText()
-    
+
     log 'winClipboardChanged', text
-    
+
     if text.length and text.trim().length
 
         for b in buffers
@@ -239,7 +237,7 @@ watchClipboard = ->
 # 0000000   0000000   000           000
 
 copyIndex = (index) ->
-    
+
     log 'copyIndex', index
     return if (index < 0) or (index > buffers.length-1)
     if buffers[index].image
@@ -256,7 +254,7 @@ copyIndex = (index) ->
 #000        000   000  0000000      000     00000000
 
 pasteIndex = (index) ->
-    
+
     log 'pasteIndex', index
     copyIndex index
     originApp = buffers.splice(index, 1)[0]?.app
@@ -275,16 +273,16 @@ pasteIndex = (index) ->
 #0000000    00000000  0000000
 
 deleteIndex = (index) ->
-    
+
     buffers.splice index, 1
     reload index-1
 
 quit = ->
-    
+
     saveBuffer()
     clippoWatch?.kill()
-        
-reload = (index=0) -> 
+
+reload = (index=0) ->
 
     post.toWins 'loadBuffers', buffers, index
 
@@ -329,4 +327,3 @@ post.on 'appReady', ->
             log "can't copy clippo icon: #{err}"
 
     watchClipboard()
-        
