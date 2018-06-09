@@ -6,10 +6,9 @@
 000   000  000   000  000  000   000
 ###
 
-{ post, app, osascript, prefs, empty, slash, noon, childp, log, fs, _ } = require 'kxk'
+{ post, app, osascript, prefs, empty, slash, noon, watch, childp, log, fs, _ } = require 'kxk'
 
 electron = require 'electron'
-chokidar = require 'chokidar'
 pkg      = require '../package.json'
 
 if not slash.win()
@@ -151,7 +150,6 @@ readPBjson = (path) ->
 
 winClipboardChanged = ->
 
-
     activeWin = require 'active-win'
     appName = 'clippo'
 
@@ -196,8 +194,6 @@ winClipboardChanged = ->
 
     text = clipboard.readText()
 
-    log 'winClipboardChanged', text
-
     if text.length and text.trim().length
 
         for b in buffers
@@ -211,7 +207,6 @@ winClipboardChanged = ->
             text:  text
             count: appName.appName
 
-        log 'winClipboardChanged', buffers.length
         reload buffers.length-1
 
 watchClipboard = ->
@@ -226,7 +221,7 @@ watchClipboard = ->
             cwd: "#{__dirname}/../bin"
             detached: false
 
-        watcher = chokidar.watch "#{__dirname}/../bin/pb.json", persistent: true
+        watcher = watch.watch "#{__dirname}/../bin/pb.json", persistent: true
         watcher.on 'add',    (path) => readPBjson path
         watcher.on 'change', (path) => readPBjson path
 
@@ -288,7 +283,6 @@ reload = (index=0) ->
 
 clearBuffer = ->
 
-    # log 'clearBuffer'
     buffers = []
     saveBuffer()
     reload()
@@ -300,7 +294,7 @@ saveBuffer = ->
 readBuffer = ->
 
     try
-        buffers = noon.load "#{app.userData}/buffers.noon"
+        buffers = noon.load slash.path "#{app.userData}/buffers.noon"
         buffers = buffers ? []
     catch
         buffers = []
