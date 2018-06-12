@@ -43,9 +43,9 @@ clippoWatch   = null
 # 000        000   000       000     000
 # 000         0000000   0000000      000
 
-post.on 'paste',      (event, index) -> pasteIndex index
-post.on 'del',        (event, index) -> deleteIndex index
-post.onGet 'buffers', (event)        -> buffers
+post.on 'paste',      (index) -> pasteIndex index
+post.on 'del',        (index) -> deleteIndex index
+post.onGet 'buffers', ()      -> buffers
 post.on 'clearBuffer', -> clearBuffer()
 post.on 'saveBuffer',  -> saveBuffer()
 
