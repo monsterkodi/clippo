@@ -1,4 +1,7 @@
-![clippo](img/banner.png)
 
-![clippo](img/shot.png)
+![banner](img/banner.png)
+
+![readme](img/readme.png)
+
+![shot](img/shot.png)
 
