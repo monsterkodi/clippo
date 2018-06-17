@@ -28,37 +28,42 @@ doPaste = -> post.toMain 'paste', current
 # 000   000  000  000   000  000   000  000      000  000   000  000   000     000
 # 000   000  000   0000000   000   000  0000000  000   0000000   000   000     000
 
-highlight = (index) =>
+highlight = (index) ->
     
     cdiv =$ '.current'
     if cdiv?
         cdiv.classList.remove 'current'
+    log 'highlight', index
     current = Math.max 0, Math.min index, buffers.length-1
     line =$ "line#{current}"
     if line?
         line.classList.add 'current'
         line.scrollIntoViewIfNeeded()
+        setFocus()
+        
+window.highlight = highlight
 
 window.onload = ->
 
     highlight buffers.length-1
-    cdiv =$ '.current'
-    cdiv?.focus()
-        
-window.highlight = highlight
+    setFocus()
+    
+main =$ "#main"
 
-window.onClick = (index) ->
-    highlight index
-    doPaste()
+setFocus = -> main.focus()
 
 lineForElem = (elem) ->
-    if elem.classList?.contains('line-div') then return elem
+    if elem.classList?.contains('line-div') then return parseInt elem.id.substr 4
     if elem.parentNode? then return lineForElem elem.parentNode
 
-$('main').addEventListener "mouseover", (event) ->
-    id = lineForElem(event.target)?.id
+main.addEventListener 'mouseover', (event) ->
+    id = lineForElem event.target
     highlight id if id?
 
+main.addEventListener 'click', (event) ->
+    id = lineForElem event.target
+    log 'onClick', id
+    
 # 000       0000000    0000000   0000000
 # 000      000   000  000   000  000   000
 # 000      000   000  000000000  000   000
@@ -83,7 +88,7 @@ loadBuffers = (buffs, index) ->
 
     i = 0
     for buf in buffers
-        div = elem id: "line#{i}", class: 'line-div', onClick: "window.onClick(#{i});", child:
+        div = elem id: "line#{i}", class: 'line-div', child:
             elem 'span', class: 'line-span', children: [
                 elem 'img', onClick: "window.highlight(#{i});", class: 'appicon', src: "#{iconDir}/#{buf.app}.png"
                 if buf.image?
