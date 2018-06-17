@@ -1,6 +1,6 @@
 name            clippo
 productName     clippo
-version         1.28.0
+version         1.29.0
 description     clipboard tool
 main            js/main.js
 repository
@@ -22,6 +22,7 @@ bugs
 dependencies
                 html-entities   ^1.2.1
                 kxk             https://github.com/monsterkodi/kxk.git
+                robotjs         ^0.5.1
 optionalDependencies
                 simple-plist    ^0.3.0
                 active-win      ^3.0.0

@@ -39,6 +39,12 @@ highlight = (index) =>
         line.classList.add 'current'
         line.scrollIntoViewIfNeeded()
 
+window.onload = ->
+
+    highlight buffers.length-1
+    cdiv =$ '.current'
+    cdiv?.focus()
+        
 window.highlight = highlight
 
 window.onClick = (index) ->
@@ -119,7 +125,7 @@ post.on 'combo', (combo, info) ->
 post.on 'menuAction', (action) ->
 
     switch action
-        when 'Clear'            then post.toMain 'clearBuffer'
-        when 'Save'             then post.toMain 'saveBuffer'
+        when 'Clear' then post.toMain 'clearBuffer'
+        when 'Save'  then post.toMain 'saveBuffer'
         
 loadBuffers post.get 'buffers'

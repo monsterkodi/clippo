@@ -22,7 +22,8 @@ app = new app
     icon:       '../img/app.ico'
     tray:       '../img/menu@2x.png'
     about:      '../img/about.png'
-    onQuit:     -> quit()
+    onQuit:        -> quit()
+    onWillShowWin: -> onWillShowWin()
     width:      1000
     height:     1200
     minWidth:   300
@@ -57,25 +58,33 @@ post.on 'saveBuffer',  -> saveBuffer()
 
 getActiveApp = ->
 
-    return if slash.win()
-    script = osascript """
-    tell application "System Events"
-        set n to name of first application process whose frontmost is true
-    end tell
-    do shell script "echo " & n
-    """
-    appName = childp.execSync "osascript #{script}"
-    appName = String(appName).trim()
+    if slash.win()
+        activeWin = require 'active-win'
+        winInfo = activeWin.sync()
+        # log 'winInfo', winInfo
+        if winInfo?.owner?
+            appName = slash.base winInfo.owner.name
+    else
+        script = osascript """
+        tell application "System Events"
+            set n to name of first application process whose frontmost is true
+        end tell
+        do shell script "echo " & n
+        """
+        appName = childp.execSync "osascript #{script}"
+        appName = String(appName).trim()
     appName
 
-updateActiveApp = ->
+updateActiveApp = -> # unused?
 
+    log 'udpateActiveApp'
     appName = getActiveApp()
     if appName and appName != electron.app.getName()
         activeApp = appName
 
-activateApp = ->
+activateApp = -> # unused?
 
+    log 'activateApp'
     return if slash.win()
     if activeApp.length
         try
@@ -113,7 +122,7 @@ readPBjson = (path) ->
     return if buffers.length and obj.count == buffers[buffers.length-1].count
 
     currentApp = getActiveApp()
-    currentApp = 'clippo' if currentApp == 'Electron'
+    currentApp = 'clippo' if currentApp.toLowerCase() == 'electron'
     originApp  = 'clippo' if (not originApp) and (not currentApp)
     saveAppIcon originApp ? currentApp
 
@@ -147,6 +156,17 @@ readPBjson = (path) ->
 
     originApp = undefined
     reload buffers.length-1
+
+onWillShowWin = ->
+    
+    activeApp = getActiveApp()
+    # log 'onWillShowWin', activeApp    
+    
+# 000   000  000  000   000        000   000   0000000   000000000   0000000  000   000  
+# 000 0 000  000  0000  000        000 0 000  000   000     000     000       000   000  
+# 000000000  000  000 0 000        000000000  000000000     000     000       000000000  
+# 000   000  000  000  0000        000   000  000   000     000     000       000   000  
+# 00     00  000  000   000        00     00  000   000     000      0000000  000   000  
 
 winClipboardChanged = ->
 
@@ -233,7 +253,6 @@ watchClipboard = ->
 
 copyIndex = (index) ->
 
-    log 'copyIndex', index
     return if (index < 0) or (index > buffers.length-1)
     if buffers[index].image
         image = nativeImage.createFromBuffer new Buffer buffers[index].image, 'base64'
@@ -250,16 +269,26 @@ copyIndex = (index) ->
 
 pasteIndex = (index) ->
 
-    log 'pasteIndex', index
     copyIndex index
     originApp = buffers.splice(index, 1)[0]?.app
-    paste = () ->
+    
+    if slash.win()
+        paste = () ->
+            robot = require 'robotjs'
+            if activeApp == 'mintty'
+                robot.keyTap 'v', ['control', 'shift']
+            else
+                robot.keyTap 'v', 'control'
         app.win.close()
-        childp.exec "osascript " + osascript """
-        tell application "System Events" to keystroke "v" using command down
-        """
-    if not slash.win() and originApp
-        setTimeout paste, 10
+        setTimeout paste, 20
+    else
+        paste = () ->
+            app.win.close()
+            childp.exec "osascript " + osascript """
+            tell application "System Events" to keystroke "v" using command down
+            """
+        if originApp
+            setTimeout paste, 10
 
 #0000000    00000000  000
 #000   000  000       000
