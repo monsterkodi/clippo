@@ -1,12 +1,14 @@
 #!/usr/bin/env bash
 cd `dirname $0`/..
 
-2>/dev/null 1>/dev/null killall clippo
-2>/dev/null 1>/dev/null killall clippo
+if rm -rf clippo-darwin-x64; then
 
-konrad --run
+    konrad
+    
+    node_modules/.bin/electron-rebuild
 
-IGNORE="/(.*\.dmg$|Icon$|watch$|coffee$|icons$|.*md$|pug$|styl$|.*\.noon$|.*\.lock$|img/banner\.png)"
-
-# --no-prune needed because of problem with plist. fix me!
-node_modules/electron-packager/cli.js . --no-prune --overwrite --icon=img/app.icns --ignore=$IGNORE
+    IGNORE="/(.*\.dmg$|Icon$|icons$|.*md$|pug$|styl$|.*\.lock$|img/banner\.png)"
+    
+    # --no-prune needed because of problem with plist. fix me!
+    node_modules/electron-packager/cli.js . --no-prune --overwrite --icon=img/app.icns --ignore=$IGNORE
+fi

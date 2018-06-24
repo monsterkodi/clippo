@@ -8,6 +8,7 @@
 
 { post, app, osascript, prefs, empty, slash, noon, watch, childp, log, fs, _ } = require 'kxk'
 
+robot    = require 'robotjs'
 electron = require 'electron'
 pkg      = require '../package.json'
 
@@ -171,7 +172,7 @@ winClipboardChanged = ->
 
     activeWin = require 'active-win'
     appName = 'clippo'
-
+    
     winInfo = activeWin.sync()
 
     if winInfo?.owner?
@@ -270,10 +271,9 @@ pasteIndex = (index) ->
 
     copyIndex index
     originApp = buffers.splice(index, 1)[0]?.app
-    
+
     if slash.win()
         paste = () ->
-            robot = require 'robotjs'
             if activeApp == 'mintty'
                 robot.keyTap 'v', ['control', 'shift']
             else
@@ -282,12 +282,10 @@ pasteIndex = (index) ->
         setTimeout paste, 20
     else
         paste = () ->
-            app.win.close()
-            childp.exec "osascript " + osascript """
-            tell application "System Events" to keystroke "v" using command down
-            """
-        if originApp
-            setTimeout paste, 10
+            robot.keyTap 'v', 'command'
+        robot.keyTap 'tab', 'command'
+        app.win.close()
+        setTimeout paste, 50
 
 #0000000    00000000  000
 #000   000  000       000
