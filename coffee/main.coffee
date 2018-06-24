@@ -28,7 +28,6 @@ app = new app
     height:     1200
     minWidth:   300
     minHeight:  200
-    # aboutDebug: true
 
 clipboard     = electron.clipboard
 nativeImage   = electron.nativeImage
