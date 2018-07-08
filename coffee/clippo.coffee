@@ -6,7 +6,7 @@
  0000000  0000000  000  000        000         0000000
 ###
 
-{ post, win, keyinfo, title, scheme, prefs, slash, stopEvent, elem, valid, empty, popup, pos, str, log, $, _ } = require 'kxk'
+{ post, setStyle, slash, clamp, valid, prefs, elem, str, win, log, $, _ } = require 'kxk'
 
 pkg       = require '../package.json'
 electron  = require 'electron'
@@ -114,7 +114,53 @@ loadBuffers = (buffs, index) ->
         i += 1
 
     highlight index ? buffers.length-1
+
+# 00000000   0000000   000   000  000000000      0000000  000  0000000  00000000
+# 000       000   000  0000  000     000        000       000     000   000
+# 000000    000   000  000 0 000     000        0000000   000    000    0000000
+# 000       000   000  000  0000     000             000  000   000     000
+# 000        0000000   000   000     000        0000000   000  0000000  00000000
+
+defaultFontSize = 15
+
+getFontSize = -> prefs.get 'fontSize', defaultFontSize
+
+setFontSize = (s) ->
         
+    s = getFontSize() if not _.isFinite s
+    s = clamp 4, 44, s
+
+    prefs.set "fontSize", s
+
+    setStyle "#buffer", 'font-size', "#{s}px"
+    iconSize = clamp 18, 64, s * 2
+    setStyle 'img.appicon', 'height', "#{iconSize}px"
+    setStyle 'img.appicon', 'width',  "#{iconSize}px"
+    setStyle 'img.appicon', 'padding-top',  "6px"
+
+changeFontSize = (d) ->
+    
+    s = getFontSize()
+    if      s >= 30 then f = 4
+    else if s >= 50 then f = 10
+    else if s >= 20 then f = 2
+    else                 f = 1
+        
+    setFontSize s + f*d
+
+resetFontSize = ->
+    
+    prefs.set 'fontSize', defaultFontSize
+    setFontSize defaultFontSize
+     
+onWheel = (event) ->
+    
+    if 0 <= w.modifiers.indexOf 'ctrl'
+        changeFontSize -event.deltaY/100
+  
+setFontSize getFontSize()
+window.document.addEventListener 'wheel', onWheel    
+    
 #  0000000   0000000   00     00  0000000     0000000   
 # 000       000   000  000   000  000   000  000   000  
 # 000       000   000  000000000  0000000    000   000  
@@ -141,7 +187,10 @@ post.on 'combo', (combo, info) ->
 post.on 'menuAction', (action) ->
 
     switch action
-        when 'Clear' then post.toMain 'clearBuffer'
-        when 'Save'  then post.toMain 'saveBuffer'
+        when 'Clear'    then post.toMain 'clearBuffer'
+        when 'Save'     then post.toMain 'saveBuffer'
+        when 'Increase' then changeFontSize +1
+        when 'Decrease' then changeFontSize -1
+        when 'Reset'    then resetFontSize()
         
 loadBuffers post.get 'buffers'

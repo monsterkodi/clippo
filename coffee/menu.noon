@@ -28,6 +28,11 @@ Window
     Minimize                alt+ctrl+shift+m
     Maximize                alt+ctrl+m
     ---
+    Font Size   
+        Increase            ctrl+=
+        Decrease            ctrl+-
+        Reset               ctrl+0
+    ----
     Screenshot              f3
     Reload                  alt+ctrl+l r
     DevTools                alt+ctrl+i i

@@ -57,6 +57,50 @@ pre
     margin                  0
     margin-left             7px
     margin-top              2px
+    // 
+# 00000000   0000000   000   000  000000000      0000000  000  0000000  00000000
+# 000       000   000  0000  000     000        000       000     000   000
+# 000000    000   000  000 0 000     000        0000000   000    000    0000000
+# 000       000   000  000  0000     000             000  000   000     000
+# 000        0000000   000   000     000        0000000   000  0000000  00000000
+
+defaultFontSize = 15
+
+getFontSize = -> prefs.get 'fontSize', defaultFontSize
+
+setFontSize = (s) ->
+        
+    s = getFontSize() if not _.isFinite s
+    s = clamp 4, 44, s
+
+    prefs.set "fontSize", s
+    lines.lines.style.fontSize = "#{s}px"
+    iconSize = clamp 4, 44, parseInt s
+
+    setStyle '.icon', 'height', "#{iconSize}px"
+    setStyle '.icon img', 'height', "#{iconSize}px"
+
+changeFontSize = (d) ->
+    
+    s = getFontSize()
+    if      s >= 30 then f = 4
+    else if s >= 50 then f = 10
+    else if s >= 20 then f = 2
+    else                 f = 1
+        
+    setFontSize s + f*d
+
+resetFontSize = ->
+    
+    prefs.set 'fontSize', defaultFontSize
+    setFontSize defaultFontSize
+     
+onWheel = (event) ->
+    
+    if 0 <= w.modifiers.indexOf 'ctrl'
+        changeFontSize -event.deltaY/100
+    
+window.document.addEventListener 'wheel', onWheel    
     overflow                hidden
     padding                 13px
     cursor                  pointer
