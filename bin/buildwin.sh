@@ -11,4 +11,5 @@ if rm -rf clippo-win32-x64; then
     
     node_modules/electron-packager/cli.js . --overwrite --icon=img/app.ico --ignore=$IGNORE
 
+    rm -rf clippo-win32-x64/resources/app/inno
 fi
