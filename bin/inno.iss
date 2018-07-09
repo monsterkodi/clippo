@@ -1,5 +1,5 @@
 #define MyAppName "clippo"
-#define MyAppVersion "1.34.0"
+#define MyAppVersion "1.35.0"
 #define MyAppPublisher "monsterkodi"
 #define MyAppURL "https://github.com/monsterkodi/clippo"
 #define MyAppExeName "clippo.exe"

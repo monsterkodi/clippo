@@ -5,11 +5,14 @@ if rm -rf clippo-win32-x64; then
 
     konrad
     
-    # node_modules/.bin/electron-rebuild
+    node_modules/.bin/electron-rebuild
     
     # IGNORE="/(.*\.dmg$|Icon$|watch$|icons$|.*md$|pug$|styl$|.*\.lock$|img/banner\.png)"
     
-    node_modules/electron-packager/cli.js . --overwrite --icon=img/app.ico #--ignore=$IGNORE
+    node_modules/electron-packager/cli.js . --overwrite --icon=img/app.ico --no-prune #--ignore=$IGNORE
 
+    rm -rf clippo-win32-x64/resources/app/node_modules/electron-packager
+    rm -rf clippo-win32-x64/resources/app/node_modules/electron-rebuild
+    rm -rf clippo-win32-x64/resources/app/node_modules/electron
     rm -rf clippo-win32-x64/resources/app/inno
 fi

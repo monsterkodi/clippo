@@ -20,6 +20,7 @@ w = new win
 current = 0
 buffers = []
 main    =$ "#main"
+main.style.overflow = 'scroll'
 
 doPaste = -> post.toMain 'paste', current
 
