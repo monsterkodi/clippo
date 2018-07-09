@@ -1,5 +1,5 @@
 #define MyAppName "clippo"
-#define MyAppVersion "1.32.0"
+#define MyAppVersion "1.34.0"
 #define MyAppPublisher "monsterkodi"
 #define MyAppURL "https://github.com/monsterkodi/clippo"
 #define MyAppExeName "clippo.exe"
@@ -22,6 +22,7 @@ Compression=lzma
 SolidCompression=yes
 WizardImageFile=..\img\innolarge.bmp
 WizardSmallImageFile=..\img\innosmall.bmp
+WizardImageStretch=no
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
