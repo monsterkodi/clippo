@@ -7,9 +7,7 @@ if rm -rf clippo-win32-x64; then
     
     node_modules/.bin/electron-rebuild
     
-    # IGNORE="/(.*\.dmg$|Icon$|watch$|icons$|.*md$|pug$|styl$|.*\.lock$|img/banner\.png)"
-    
-    node_modules/electron-packager/cli.js . --overwrite --icon=img/app.ico --no-prune #--ignore=$IGNORE
+    node_modules/electron-packager/cli.js . --overwrite --icon=img/app.ico --no-prune
 
     rm -rf clippo-win32-x64/resources/app/node_modules/electron-packager
     rm -rf clippo-win32-x64/resources/app/node_modules/electron-rebuild
