@@ -6,8 +6,9 @@
 000   000  000   000  000  000   000
 ###
 
-{ post, app, osascript, prefs, empty, slash, noon, watch, childp, log, fs, _ } = require 'kxk'
+{ post, app, osascript, prefs, empty, slash, noon, childp, log, fs, _ } = require 'kxk'
 
+watch    = require 'chokidar'
 robot    = require 'robotjs'
 electron = require 'electron'
 pkg      = require '../package.json'
