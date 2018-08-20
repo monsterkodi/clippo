@@ -6,14 +6,14 @@
 000   000  000   000  000  000   000
 ###
 
-{ post, app, osascript, prefs, empty, slash, noon, childp, log, fs, _ } = require 'kxk'
+{ post, osascript, childp, slash, empty, prefs, noon, app, fs, os, log, _ } = require 'kxk'
 
 watch    = require 'chokidar'
 robot    = require 'robotjs'
 electron = require 'electron'
 pkg      = require '../package.json'
 
-if not slash.win()
+if os.platform() == 'darwin'
     appIconSync = require './appiconsync'
 
 app = new app
@@ -38,6 +38,7 @@ iconDir       = ""
 activeApp     = ""
 originApp     = null
 clippoWatch   = null
+appName       = 'clippo'
 
 # 00000000    0000000    0000000  000000000
 # 000   000  000   000  000          000
@@ -59,13 +60,13 @@ post.on 'saveBuffer',  -> saveBuffer()
 
 getActiveApp = ->
 
-    if slash.win()
+    if os.platform() == 'win32'
         activeWin = require 'active-win'
         winInfo = activeWin.sync()
         # log 'winInfo', winInfo
         if winInfo?.owner?
             appName = slash.base winInfo.owner.name
-    else
+    else if os.platform() == 'darwin'
         script = osascript """
         tell application "System Events"
             set n to name of first application process whose frontmost is true
@@ -85,8 +86,8 @@ updateActiveApp = -> # unused?
 
 activateApp = -> # unused?
 
+    return if os.platform() != 'darwin'
     log 'activateApp'
-    return if slash.win()
     if activeApp.length
         try
             childp.execSync "osascript " + osascript """
@@ -191,7 +192,11 @@ winClipboardChanged = ->
                     fs.writeFileSync iconPath, result, encoding: 'base64'
                 catch err
                     log "write icon #{iconPath} failed"
+                    
+    onClipboardChanged()
 
+onClipboardChanged = ->
+    log 'onClipboardChanged'         
     for format in clipboard.availableFormats()
 
         if format.startsWith 'image/'
@@ -226,18 +231,18 @@ winClipboardChanged = ->
         buffers.push
             app:   appName
             text:  text
-            count: appName.appName
+            # count: appName.appName
 
         reload buffers.length-1
 
 watchClipboard = ->
 
-    if slash.win()
+    if os.platform() == 'win32'
 
         cw = require 'clipboard-watch'
         cw.watcher winClipboardChanged
 
-    else
+    else if os.platform() == 'darwin'
         clippoWatch = childp.spawn "#{__dirname}/../bin/clippo-watch", [],
             cwd: "#{__dirname}/../bin"
             detached: false
@@ -245,6 +250,10 @@ watchClipboard = ->
         watcher = watch.watch "#{__dirname}/../bin/pb.json", persistent: true
         watcher.on 'add',    (path) => readPBjson path
         watcher.on 'change', (path) => readPBjson path
+        
+    else
+        cw = require 'electron-clipboard-watcher'
+        cw watchDelay:500, onImageChange:onClipboardChanged, onTextChange:onClipboardChanged
 
 # 0000000   0000000   00000000   000   000
 #000       000   000  000   000   000 000
@@ -273,7 +282,7 @@ pasteIndex = (index) ->
     copyIndex index
     originApp = buffers.splice(index, 1)[0]?.app
 
-    if slash.win()
+    if os.platform() != 'darwin'
         paste = () ->
             if activeApp == 'mintty'
                 robot.keyTap 'v', ['control', 'shift']

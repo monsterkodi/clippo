@@ -20,6 +20,8 @@ license         Unlicense
 bugs
                 url  https://github.com/monsterkodi/clippo/issues
 dependencies
+                chokidar        ^2.0.4
+                electron-clipboard-watcher  ^1.0.1
                 html-entities   ^1.2.1
                 kxk             https://github.com/monsterkodi/kxk.git
                 robotjs         ^0.5.1
