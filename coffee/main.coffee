@@ -196,7 +196,7 @@ winClipboardChanged = ->
     onClipboardChanged()
 
 onClipboardChanged = ->
-    log 'onClipboardChanged'         
+
     for format in clipboard.availableFormats()
 
         if format.startsWith 'image/'
