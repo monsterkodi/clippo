@@ -6,12 +6,12 @@
 # 000   000  00000000  000   000   0000000
 
 clippo
-    About                   ctrl+,
+    About                   cmdctrl+,
     -
-    Clear                   ctrl+k k
-    Save                    ctrl+s s
+    Clear                   cmdctrl+k k
+    Save                    cmdctrl+s s
     --
-    Quit                    ctrl+q q
+    Quit                    cmdctrl+q q
 
 # 000   000  000  000   000  0000000     0000000   000   000
 # 000 0 000  000  0000  000  000   000  000   000  000 0 000
@@ -20,7 +20,7 @@ clippo
 # 00     00  000  000   000  0000000     0000000   00     00
 
 Window
-    Close                   ctrl+w w
+    Close                   cmdctrl+w w
     -
     Toggle Menu             alt+m m
     Toggle Scheme           alt+i ctrl+i
@@ -29,10 +29,10 @@ Window
     Maximize                alt+ctrl+m
     ---
     Font Size   
-        Increase            ctrl+=
-        Decrease            ctrl+-
-        Reset               ctrl+0
+        Increase            cmdctrl+=
+        Decrease            cmdctrl+-
+        Reset               cmdctrl+0
     ----
     Screenshot              f3
-    Reload                  alt+ctrl+l r
-    DevTools                alt+ctrl+i i
+    Reload                  alt+cmdctrl+l
+    DevTools                alt+cmdctrl+i
