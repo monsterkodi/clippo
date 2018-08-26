@@ -6,9 +6,8 @@
 000   000  000   000  000  000   000
 ###
 
-{ post, osascript, childp, slash, empty, prefs, noon, app, fs, os, log, _ } = require 'kxk'
+{ watch, post, osascript, childp, slash, empty, prefs, noon, app, os, fs, log, _ } = require 'kxk'
 
-watch    = require 'chokidar'
 robot    = require 'robotjs'
 electron = require 'electron'
 pkg      = require '../package.json'
@@ -231,7 +230,7 @@ onClipboardChanged = ->
         buffers.push
             app:   appName
             text:  text
-            # count: appName.appName
+            count: buffers.length-1
 
         reload buffers.length-1
 
@@ -247,9 +246,8 @@ watchClipboard = ->
             cwd: "#{__dirname}/../bin"
             detached: false
 
-        watcher = watch.watch "#{__dirname}/../bin/pb.json", persistent: true
-        watcher.on 'add',    (path) => readPBjson path
-        watcher.on 'change', (path) => readPBjson path
+        watcher = watch.watch "#{__dirname}/../bin/pb.json"
+        watcher.on 'change', (info) => readPBjson info.path
         
     else
         cw = require 'electron-clipboard-watcher'

@@ -1,6 +1,8 @@
 ignore      
     /.*-x64/
     menu.noon
+    pb.json
+    dm.json
     
 pug     . ext html . replace .. pug/     js/
 styl    . ext css  . replace .. styl/    js/css/
