@@ -20,6 +20,7 @@ license         Unlicense
 bugs
                 url  https://github.com/monsterkodi/clippo/issues
 dependencies
+                appdmg          ^0.5.2
                 chokidar        ^2.0.4
                 electron-clipboard-watcher  ^1.0.1
                 html-entities   ^1.2.1
