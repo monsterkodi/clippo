@@ -60,7 +60,7 @@ setFocus = -> main.focus()
 
 lineForTarget = (target) ->
     
-    if upElem = elem.upElem target, class:'line-div'
+    if upElem = elem.upElem target, { class:'line-div' }
         return parseInt upElem.id.substr 4
     
 main.addEventListener 'mouseover', (event) ->
