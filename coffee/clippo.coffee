@@ -6,7 +6,7 @@
  0000000  0000000  000  000        000         0000000
 ###
 
-{ post, setStyle, slash, clamp, valid, prefs, elem, str, win, log, $, _ } = require 'kxk'
+{ post, setStyle, slash, clamp, valid, prefs, elem, kstr, win, $, _ } = require 'kxk'
 
 pkg       = require '../package.json'
 electron  = require 'electron'
@@ -106,7 +106,7 @@ loadBuffers = (buffs, index) ->
                 if buf.image?
                     elem 'img', src: "data:image/png;base64,#{buf.image}", class: 'image'
                 else if buf.text?
-                    encl = ( str.encode(l) for l in buf.text.split "\n" )
+                    encl = ( kstr.encode(l) for l in buf.text.split "\n" )
                     elem 'pre', html: encl.join "<br>"
                 else
                     elem 'pre'

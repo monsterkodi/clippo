@@ -6,7 +6,7 @@
 000   000  000   000  000  000   000
 ###
 
-{ watch, post, osascript, childp, slash, empty, prefs, noon, app, os, fs, log, _ } = require 'kxk'
+{ watch, post, osascript, childp, slash, empty, prefs, noon, app, os, fs, kerror, klog, _ } = require 'kxk'
 
 robot    = require 'robotjs'
 electron = require 'electron'
@@ -62,7 +62,7 @@ getActiveApp = ->
     if os.platform() == 'win32'
         activeWin = require 'active-win'
         winInfo = activeWin.sync()
-        # log 'winInfo', winInfo
+
         if winInfo?.owner?
             appName = slash.base winInfo.owner.name
     else if os.platform() == 'darwin'
@@ -78,7 +78,6 @@ getActiveApp = ->
 
 updateActiveApp = -> # unused?
 
-    log 'udpateActiveApp'
     appName = getActiveApp()
     if appName and appName != electron.app.getName()
         activeApp = appName
@@ -86,7 +85,6 @@ updateActiveApp = -> # unused?
 activateApp = -> # unused?
 
     return if os.platform() != 'darwin'
-    log 'activateApp'
     if activeApp.length
         try
             childp.execSync "osascript " + osascript """
@@ -161,7 +159,6 @@ readPBjson = (path) ->
 onWillShowWin = ->
     
     activeApp = getActiveApp()
-    # log 'onWillShowWin', activeApp    
     
 # 000   000  000  000   000        000   000   0000000   000000000   0000000  000   000  
 # 000 0 000  000  0000  000        000 0 000  000   000     000     000       000   000  
@@ -190,7 +187,7 @@ winClipboardChanged = ->
                 try
                     fs.writeFileSync iconPath, result, encoding: 'base64'
                 catch err
-                    log "write icon #{iconPath} failed"
+                    kerror "write icon #{iconPath} failed"
                     
     onClipboardChanged()
 
@@ -281,7 +278,7 @@ pasteIndex = (index) ->
     originApp = buffers.splice(index, 1)[0]?.app
 
     if os.platform() != 'darwin'
-        paste = () ->
+        paste = ->
             if activeApp == 'mintty'
                 robot.keyTap 'v', ['control', 'shift']
             else
@@ -289,10 +286,8 @@ pasteIndex = (index) ->
         app.win.close()
         setTimeout paste, 20
     else
-        paste = () ->
-            robot.keyTap 'v', 'command'
-        robot.keyTap 'tab', 'command'
-        app.win.close()
+        paste = -> robot.keyTap 'v', 'command'
+        robot.keyTap 'tab', 'command' # for some reason this doesn't work when activated from mouse click
         setTimeout paste, 50
 
 #0000000    00000000  000
@@ -352,6 +347,6 @@ post.on 'appReady', ->
         try
             fs.copySync "#{__dirname}/../img/clippo.png", slash.join iconDir, 'clippo.png'
         catch err
-            log "can't copy clippo icon: #{err}"
+            kerror "can't copy clippo icon: #{err}"
 
     watchClipboard()

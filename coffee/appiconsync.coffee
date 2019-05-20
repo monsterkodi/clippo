@@ -4,7 +4,7 @@
 #000   000  000        000        000  000       000   000  000  0000       000     000     000  0000  000     
 #000   000  000        000        000   0000000   0000000   000   000  0000000      000     000   000   0000000
 
-{ resolve, childp, slash, childp, log, fs } = require 'kxk' 
+{ resolve, childp, slash, childp, fs } = require 'kxk' 
 
 module.exports = (appName, outDir=".", size=1024) ->
 
