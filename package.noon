@@ -23,7 +23,7 @@ dependencies
                 chokidar        ^3.0.2
                 electron-clipboard-watcher  ^1.0.1
                 html-entities   ^1.2.1
-                kxk             ^0.319.0
+                kxk             ^0.321.0
                 clipboard-watch  https://github.com/monsterkodi/clipboard-watch.git
 optionalDependencies
                 simple-plist  ^1.0.0

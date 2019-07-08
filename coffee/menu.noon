@@ -27,6 +27,7 @@ Window
     --
     Minimize                alt+ctrl+shift+m
     Maximize                alt+ctrl+m
+    Hide                    command+h h
     ---
     Font Size   
         Increase            cmdctrl+=
