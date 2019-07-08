@@ -11,5 +11,5 @@ if rm -rf clippo-darwin-x64; then
     
     # --no-prune needed because of problem with plist. fix me!
     #node_modules/electron-packager/cli.js . --no-prune --overwrite --icon=img/app.icns --ignore=$IGNORE
-    node_modules/electron-packager/cli.js . --overwrite --icon=img/app.icns --ignore=$IGNORE
+    node_modules/.bin/electron-packager . --overwrite --icon=img/app.icns --ignore=$IGNORE
 fi

@@ -8,7 +8,6 @@
 
 { watch, post, osascript, childp, slash, empty, prefs, noon, app, os, fs, kerror, klog, _ } = require 'kxk'
 
-robot    = require 'robotjs'
 electron = require 'electron'
 pkg      = require '../package.json'
 
@@ -76,23 +75,6 @@ getActiveApp = ->
         appName = String(appName).trim()
     appName
 
-updateActiveApp = -> # unused?
-
-    appName = getActiveApp()
-    if appName and appName != electron.app.getName()
-        activeApp = appName
-
-activateApp = -> # unused?
-
-    return if os.platform() != 'darwin'
-    if activeApp.length
-        try
-            childp.execSync "osascript " + osascript """
-            tell application "#{activeApp}" to activate
-            """
-        catch
-            return
-
 # 0000000   00000000   00000000   000   0000000   0000000   000   000
 #000   000  000   000  000   000  000  000       000   000  0000  000
 #000000000  00000000   00000000   000  000       000   000  000 0 000
@@ -106,55 +88,6 @@ saveAppIcon = (appName) ->
         png = appIconSync appName, iconDir, 128
         appName = "clippo" if not png
     appName
-
-# 000   000   0000000   000000000   0000000  000   000
-# 000 0 000  000   000     000     000       000   000
-# 000000000  000000000     000     000       000000000
-# 000   000  000   000     000     000       000   000
-# 00     00  000   000     000      0000000  000   000
-
-readPBjson = (path) ->
-
-    obj = noon.load path
-
-    return if not obj.text? and not obj.image?
-    return if buffers.length and obj.count == buffers[buffers.length-1].count
-
-    currentApp = getActiveApp()
-    currentApp = 'clippo' if currentApp.toLowerCase() == 'electron'
-    originApp  = 'clippo' if (not originApp) and (not currentApp)
-    saveAppIcon originApp ? currentApp
-
-    if obj.image?
-
-        for b in buffers
-            if b.image? and b.image == obj.image
-                _.pull buffers, b
-                break
-
-        buffers.push
-            app:   originApp ? currentApp
-            image: obj.image
-            count: obj.count
-
-    if obj.text?
-
-        for b in buffers
-            if b.text? and b.text == obj.text
-                _.pull buffers, b
-                break
-
-        buffers.push
-            app:   originApp ? currentApp
-            text:  obj.text
-            count: obj.count
-
-    maxBuffers = prefs.get 'maxBuffers', 50
-    while buffers.length > maxBuffers
-        buffers.shift()
-
-    originApp = undefined
-    reload buffers.length-1
 
 onWillShowWin = ->
     
@@ -191,6 +124,16 @@ winClipboardChanged = ->
                     
     onClipboardChanged()
 
+macClipboardChanged = ->
+
+    currentApp = getActiveApp()
+    currentApp = 'clippo' if currentApp.toLowerCase() == 'electron'
+    originApp  = 'clippo' if (not originApp) and (not currentApp)
+
+    saveAppIcon originApp ? currentApp
+
+    onClipboardChanged()
+    
 onClipboardChanged = ->
 
     for format in clipboard.availableFormats()
@@ -237,18 +180,11 @@ watchClipboard = ->
 
         cw = require 'clipboard-watch'
         cw.watcher winClipboardChanged
-
-    else if os.platform() == 'darwin'
-        clippoWatch = childp.spawn "#{__dirname}/../bin/clippo-watch", [],
-            cwd: "#{__dirname}/../bin"
-            detached: false
-
-        watcher = watch.watch "#{__dirname}/../bin/pb.json"
-        watcher.on 'change', (info) => readPBjson info.path
         
     else
+        
         cw = require 'electron-clipboard-watcher'
-        cw watchDelay:500, onImageChange:onClipboardChanged, onTextChange:onClipboardChanged
+        cw watchDelay:200, onImageChange:macClipboardChanged, onTextChange:macClipboardChanged
 
 # 0000000   0000000   00000000   000   000
 #000       000   000  000   000   000 000
@@ -279,6 +215,8 @@ pasteIndex = (index) ->
 
     if os.platform() != 'darwin'
         paste = ->
+            robot = require 'robotjs'
+            
             if activeApp == 'mintty'
                 robot.keyTap 'v', ['control', 'shift']
             else
@@ -286,9 +224,12 @@ pasteIndex = (index) ->
         app.win.close()
         setTimeout paste, 20
     else
-        paste = -> robot.keyTap 'v', 'command'
-        robot.keyTap 'tab', 'command' # for some reason this doesn't work when activated from mouse click
-        setTimeout paste, 50
+        childp.execSync "osascript " + osascript """
+            tell application "System Events" to keystroke tab using command down
+        """
+        childp.execSync "osascript " + osascript """
+            tell application "System Events" to keystroke "v" using command down
+        """
 
 #0000000    00000000  000
 #000   000  000       000
