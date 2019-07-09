@@ -6,7 +6,7 @@
 # 000   000  00000000  000   000   0000000
 
 clippo
-    About                   cmdctrl+shift+/
+    About                   cmdctrl+alt+/
     -
     Clear                   cmdctrl+k k
     Save                    cmdctrl+s s
