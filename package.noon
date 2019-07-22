@@ -1,20 +1,17 @@
 name            clippo
 productName     clippo
-version         1.47.0
+version         1.49.0
 description     clipboard tool
 main            js/main.js
-repository
-                type  git
-                url   git+https://github.com/monsterkodi/clippo.git
+repository      github:monsterkodi/clippo
 scripts
-                mac   ./bin/buildmac.sh
+                mac   bash ./bin/buildmac.sh
                 win   bash ./bin/buildwin.sh
 keywords
                 copy
                 paste
                 clipboard
                 pasteboard
-                electron
 author          monsterkodi
 license         Unlicense
 bugs
@@ -23,12 +20,11 @@ dependencies
                 chokidar        ^3.0.2
                 electron-clipboard-watcher  ^1.0.1
                 html-entities   ^1.2.1
-                kxk             ^0.325.0
-                clipboard-watch  https://github.com/monsterkodi/clipboard-watch.git
+                kxk             ^0.331.0
 optionalDependencies
+                wxw           ^1.23.0
                 simple-plist  ^1.0.0
 devDependencies
-                appdmg          ^0.6.0
-                electron        ^5.0.6
-                electron-packager  ^14.0.1
+                electron        ^5.0.7
+                electron-packager  ^14.0.2
                 electron-rebuild  ^1.8.5

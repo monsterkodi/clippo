@@ -6,7 +6,7 @@
 000   000  000   000  000  000   000
 ###
 
-{ watch, post, osascript, childp, slash, empty, prefs, noon, app, os, fs, kerror, klog, _ } = require 'kxk'
+{ watch, post, osascript, childp, slash, empty, first, prefs, noon, app, os, fs, kerror, klog, _ } = require 'kxk'
 
 electron = require 'electron'
 pkg      = require '../package.json'
@@ -59,11 +59,10 @@ post.on 'saveBuffer',  -> saveBuffer()
 getActiveApp = ->
 
     if os.platform() == 'win32'
-        activeWin = require 'active-win'
-        winInfo = activeWin.sync()
-
-        if winInfo?.owner?
-            appName = slash.base winInfo.owner.name
+        wxw = require 'wxw'
+        info = first wxw 'info' 'top'
+        klog 'getActiveApp' info
+        appName = slash.base info.path
     else if os.platform() == 'darwin'
         script = osascript """
         tell application "System Events"
@@ -101,26 +100,19 @@ onWillShowWin = ->
 
 winClipboardChanged = ->
 
-    activeWin = require 'active-win'
+    wxw = require 'wxw'
     appName = 'clippo'
     
-    winInfo = activeWin.sync()
+    winInfo = first wxw 'info' 'top'
 
-    if winInfo?.owner?
-        appName = slash.base winInfo.owner.name
-        exclude = prefs.get 'exclude', ['password-turtle']
-        if not empty exclude
-            for exapp in exclude
-                return if appName.startsWith exapp
-        iconPath = "#{iconDir}/#{appName}.png"
-        if not slash.isFile iconPath
-            extractIcon = require 'win-icon-extractor'
-            extractIcon(winInfo.owner.path).then (result) ->
-                result = result.slice 'data:image/png;base64,'.length
-                try
-                    fs.writeFileSync iconPath, result, encoding: 'base64'
-                catch err
-                    kerror "write icon #{iconPath} failed"
+    appName = slash.base winInfo.path
+    exclude = prefs.get 'exclude', ['password-turtle']
+    if not empty exclude
+        for exapp in exclude
+            return if appName.startsWith exapp
+    iconPath = "#{iconDir}/#{appName}.png"
+    if not slash.isFile iconPath
+        wxw 'icon' winInfo.path, iconPath
                     
     onClipboardChanged()
 
@@ -175,15 +167,12 @@ onClipboardChanged = ->
         reload buffers.length-1
 
 watchClipboard = ->
+    
+    cw = require 'electron-clipboard-watcher'
 
     if os.platform() == 'win32'
-
-        cw = require 'clipboard-watch'
-        cw.watcher winClipboardChanged
-        
+        cw watchDelay:200, onImageChange:winClipboardChanged, onTextChange:winClipboardChanged
     else
-        
-        cw = require 'electron-clipboard-watcher'
         cw watchDelay:200, onImageChange:macClipboardChanged, onTextChange:macClipboardChanged
 
 # 0000000   0000000   00000000   000   000
@@ -213,17 +202,16 @@ pasteIndex = (index) ->
     copyIndex index
     originApp = buffers.splice(index, 1)[0]?.app
 
-    if os.platform() != 'darwin'
+    if os.platform() == 'win32'
+        wxw = require 'wxw'
         paste = ->
-            robot = require 'robotjs'
-            
             if activeApp == 'mintty'
-                robot.keyTap 'v', ['control', 'shift']
+                wxw 'key' 'ctrl+shift+v'
             else
-                robot.keyTap 'v', 'control'
+                wxw 'key' 'ctrl+v'
         app.win.close()
         setTimeout paste, 20
-    else
+    else if os.platform() != 'darwin'
         childp.execSync "osascript " + osascript """
             tell application "System Events" to keystroke tab using command down
         """
