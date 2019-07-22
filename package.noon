@@ -1,6 +1,6 @@
 name            clippo
 productName     clippo
-version         1.49.0
+version         1.50.0
 description     clipboard tool
 main            js/main.js
 repository      github:monsterkodi/clippo
@@ -28,3 +28,4 @@ devDependencies
                 electron        ^5.0.7
                 electron-packager  ^14.0.2
                 electron-rebuild  ^1.8.5
+                konrad          ^0.141.0

@@ -1,16 +1,18 @@
 #!/usr/bin/env bash
-cd `dirname $0`/..
+DIR=`dirname $0`
+BIN=$DIR/../node_modules/.bin
+cd $DIR/..
+
+npm install
 
 if rm -rf clippo-win32-x64; then
 
-    konrad
-    
-    node_modules/.bin/electron-rebuild
-    
-    node_modules/electron-packager/cli.js . --overwrite --icon=img/app.ico --no-prune
+    if $BIN/konrad; then
 
-    rm -rf clippo-win32-x64/resources/app/node_modules/electron-packager
-    rm -rf clippo-win32-x64/resources/app/node_modules/electron-rebuild
-    rm -rf clippo-win32-x64/resources/app/node_modules/electron
-    rm -rf clippo-win32-x64/resources/app/inno
+        $BIN/electron-rebuild
+
+        $BIN/electron-packager . --overwrite --icon=img/app.ico
+
+        start clippo-win32-x64/clippo.exe
+    fi
 fi
