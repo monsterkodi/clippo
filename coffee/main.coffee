@@ -61,7 +61,7 @@ getActiveApp = ->
     if os.platform() == 'win32'
         wxw = require 'wxw'
         info = first wxw 'info' 'top'
-        klog 'getActiveApp' info
+        # klog 'getActiveApp' info
         appName = slash.base info.path
     else if os.platform() == 'darwin'
         script = osascript """
