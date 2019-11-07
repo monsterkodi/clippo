@@ -2,11 +2,9 @@ node_modules
 watch/Build
 watch/DerivedData
 Icon?
-package.json
 bin/*.json
 *.dmg
 *-x64
 *-ia32
 css
-js
 *.html

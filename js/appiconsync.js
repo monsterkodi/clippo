@@ -1,0 +1,46 @@
+// koffee 1.4.0
+var childp, fs, ref, resolve, slash;
+
+ref = require('kxk'), resolve = ref.resolve, childp = ref.childp, slash = ref.slash, childp = ref.childp, fs = ref.fs;
+
+module.exports = function(appName, outDir, size) {
+    var absPath, appFolder, conPath, err, i, icnsPath, infoPath, len, obj, pngPath, ref1, splist;
+    if (outDir == null) {
+        outDir = ".";
+    }
+    if (size == null) {
+        size = 1024;
+    }
+    if (!appName.endsWith('.app')) {
+        appName += ".app";
+    }
+    ref1 = ["/Applications", "/Applications/Utilities", "/System/Library/CoreServices", "~/Applications"];
+    for (i = 0, len = ref1.length; i < len; i++) {
+        appFolder = ref1[i];
+        absPath = slash.resolve(slash.join(appFolder, appName));
+        conPath = slash.join(absPath, 'Contents');
+        try {
+            infoPath = slash.join(conPath, 'Info.plist');
+            fs.accessSync(infoPath, fs.R_OK);
+            splist = require('simple-plist');
+            obj = splist.readFileSync(infoPath);
+            if (obj['CFBundleIconFile'] != null) {
+                icnsPath = slash.join(slash.dirname(infoPath), 'Resources', obj['CFBundleIconFile']);
+                if (!icnsPath.endsWith('.icns')) {
+                    icnsPath += ".icns";
+                }
+                fs.accessSync(icnsPath, fs.R_OK);
+                pngPath = slash.resolve(slash.join(outDir, slash.base(appName) + ".png"));
+                childp.execSync("/usr/bin/sips -Z " + size + " -s format png \"" + (slash.escape(icnsPath)) + "\" --out \"" + (slash.escape(pngPath)) + "\"");
+                fs.accessSync(pngPath, fs.R_OK);
+                return pngPath;
+            }
+        } catch (error) {
+            err = error;
+            continue;
+        }
+    }
+};
+
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiYXBwaWNvbnN5bmMuanMiLCJzb3VyY2VSb290IjoiLiIsInNvdXJjZXMiOlsiIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiI7QUFNQSxJQUFBOztBQUFBLE1BQXlDLE9BQUEsQ0FBUSxLQUFSLENBQXpDLEVBQUUscUJBQUYsRUFBVyxtQkFBWCxFQUFtQixpQkFBbkIsRUFBMEIsbUJBQTFCLEVBQWtDOztBQUVsQyxNQUFNLENBQUMsT0FBUCxHQUFpQixTQUFDLE9BQUQsRUFBVSxNQUFWLEVBQXNCLElBQXRCO0FBRWIsUUFBQTs7UUFGdUIsU0FBTzs7O1FBQUssT0FBSzs7SUFFeEMsSUFBcUIsQ0FBSSxPQUFPLENBQUMsUUFBUixDQUFpQixNQUFqQixDQUF6QjtRQUFBLE9BQUEsSUFBVyxPQUFYOztBQUVBO0FBQUEsU0FBQSxzQ0FBQTs7UUFNSSxPQUFBLEdBQVUsS0FBSyxDQUFDLE9BQU4sQ0FBYyxLQUFLLENBQUMsSUFBTixDQUFXLFNBQVgsRUFBc0IsT0FBdEIsQ0FBZDtRQUNWLE9BQUEsR0FBVSxLQUFLLENBQUMsSUFBTixDQUFXLE9BQVgsRUFBb0IsVUFBcEI7QUFDVjtZQUNJLFFBQUEsR0FBVyxLQUFLLENBQUMsSUFBTixDQUFXLE9BQVgsRUFBb0IsWUFBcEI7WUFDWCxFQUFFLENBQUMsVUFBSCxDQUFjLFFBQWQsRUFBd0IsRUFBRSxDQUFDLElBQTNCO1lBQ0EsTUFBQSxHQUFTLE9BQUEsQ0FBUSxjQUFSO1lBQ1QsR0FBQSxHQUFNLE1BQU0sQ0FBQyxZQUFQLENBQW9CLFFBQXBCO1lBQ04sSUFBRywrQkFBSDtnQkFDSSxRQUFBLEdBQVcsS0FBSyxDQUFDLElBQU4sQ0FBVyxLQUFLLENBQUMsT0FBTixDQUFjLFFBQWQsQ0FBWCxFQUFvQyxXQUFwQyxFQUFpRCxHQUFJLENBQUEsa0JBQUEsQ0FBckQ7Z0JBQ1gsSUFBdUIsQ0FBSSxRQUFRLENBQUMsUUFBVCxDQUFrQixPQUFsQixDQUEzQjtvQkFBQSxRQUFBLElBQVksUUFBWjs7Z0JBQ0EsRUFBRSxDQUFDLFVBQUgsQ0FBYyxRQUFkLEVBQXdCLEVBQUUsQ0FBQyxJQUEzQjtnQkFDQSxPQUFBLEdBQVUsS0FBSyxDQUFDLE9BQU4sQ0FBYyxLQUFLLENBQUMsSUFBTixDQUFXLE1BQVgsRUFBbUIsS0FBSyxDQUFDLElBQU4sQ0FBVyxPQUFYLENBQUEsR0FBc0IsTUFBekMsQ0FBZDtnQkFDVixNQUFNLENBQUMsUUFBUCxDQUFnQixtQkFBQSxHQUFvQixJQUFwQixHQUF5QixtQkFBekIsR0FBMkMsQ0FBQyxLQUFLLENBQUMsTUFBTixDQUFhLFFBQWIsQ0FBRCxDQUEzQyxHQUFrRSxhQUFsRSxHQUE4RSxDQUFDLEtBQUssQ0FBQyxNQUFOLENBQWEsT0FBYixDQUFELENBQTlFLEdBQW9HLElBQXBIO2dCQUNBLEVBQUUsQ0FBQyxVQUFILENBQWMsT0FBZCxFQUF1QixFQUFFLENBQUMsSUFBMUI7QUFDQSx1QkFBTyxRQVBYO2FBTEo7U0FBQSxhQUFBO1lBYU07QUFDRixxQkFkSjs7QUFSSjtBQUphIiwic291cmNlc0NvbnRlbnQiOlsiIyAwMDAwMDAwICAgMDAwMDAwMDAgICAwMDAwMDAwMCAgIDAwMCAgIDAwMDAwMDAgICAwMDAwMDAwICAgMDAwICAgMDAwICAgMDAwMDAwMCAgMDAwICAgMDAwICAwMDAgICAwMDAgICAwMDAwMDAwXG4jMDAwICAgMDAwICAwMDAgICAwMDAgIDAwMCAgIDAwMCAgMDAwICAwMDAgICAgICAgMDAwICAgMDAwICAwMDAwICAwMDAgIDAwMCAgICAgICAgMDAwIDAwMCAgIDAwMDAgIDAwMCAgMDAwICAgICBcbiMwMDAwMDAwMDAgIDAwMDAwMDAwICAgMDAwMDAwMDAgICAwMDAgIDAwMCAgICAgICAwMDAgICAwMDAgIDAwMCAwIDAwMCAgMDAwMDAwMCAgICAgMDAwMDAgICAgMDAwIDAgMDAwICAwMDAgICAgIFxuIzAwMCAgIDAwMCAgMDAwICAgICAgICAwMDAgICAgICAgIDAwMCAgMDAwICAgICAgIDAwMCAgIDAwMCAgMDAwICAwMDAwICAgICAgIDAwMCAgICAgMDAwICAgICAwMDAgIDAwMDAgIDAwMCAgICAgXG4jMDAwICAgMDAwICAwMDAgICAgICAgIDAwMCAgICAgICAgMDAwICAgMDAwMDAwMCAgIDAwMDAwMDAgICAwMDAgICAwMDAgIDAwMDAwMDAgICAgICAwMDAgICAgIDAwMCAgIDAwMCAgIDAwMDAwMDBcblxueyByZXNvbHZlLCBjaGlsZHAsIHNsYXNoLCBjaGlsZHAsIGZzIH0gPSByZXF1aXJlICdreGsnIFxuXG5tb2R1bGUuZXhwb3J0cyA9IChhcHBOYW1lLCBvdXREaXI9XCIuXCIsIHNpemU9MTAyNCkgLT5cblxuICAgIGFwcE5hbWUgKz0gXCIuYXBwXCIgaWYgbm90IGFwcE5hbWUuZW5kc1dpdGggJy5hcHAnXG5cbiAgICBmb3IgYXBwRm9sZGVyIGluIFtcbiAgICAgICAgICAgIFwiL0FwcGxpY2F0aW9uc1wiXG4gICAgICAgICAgICBcIi9BcHBsaWNhdGlvbnMvVXRpbGl0aWVzXCJcbiAgICAgICAgICAgIFwiL1N5c3RlbS9MaWJyYXJ5L0NvcmVTZXJ2aWNlc1wiXG4gICAgICAgICAgICBcIn4vQXBwbGljYXRpb25zXCJcbiAgICAgICAgXVxuICAgICAgICBhYnNQYXRoID0gc2xhc2gucmVzb2x2ZSBzbGFzaC5qb2luIGFwcEZvbGRlciwgYXBwTmFtZVxuICAgICAgICBjb25QYXRoID0gc2xhc2guam9pbiBhYnNQYXRoLCAnQ29udGVudHMnXG4gICAgICAgIHRyeVxuICAgICAgICAgICAgaW5mb1BhdGggPSBzbGFzaC5qb2luIGNvblBhdGgsICdJbmZvLnBsaXN0J1xuICAgICAgICAgICAgZnMuYWNjZXNzU3luYyBpbmZvUGF0aCwgZnMuUl9PS1xuICAgICAgICAgICAgc3BsaXN0ID0gcmVxdWlyZSAnc2ltcGxlLXBsaXN0J1xuICAgICAgICAgICAgb2JqID0gc3BsaXN0LnJlYWRGaWxlU3luYyBpbmZvUGF0aCAgICAgICAgICAgIFxuICAgICAgICAgICAgaWYgb2JqWydDRkJ1bmRsZUljb25GaWxlJ10/XG4gICAgICAgICAgICAgICAgaWNuc1BhdGggPSBzbGFzaC5qb2luIHNsYXNoLmRpcm5hbWUoaW5mb1BhdGgpLCAnUmVzb3VyY2VzJywgb2JqWydDRkJ1bmRsZUljb25GaWxlJ11cbiAgICAgICAgICAgICAgICBpY25zUGF0aCArPSBcIi5pY25zXCIgaWYgbm90IGljbnNQYXRoLmVuZHNXaXRoICcuaWNucydcbiAgICAgICAgICAgICAgICBmcy5hY2Nlc3NTeW5jIGljbnNQYXRoLCBmcy5SX09LIFxuICAgICAgICAgICAgICAgIHBuZ1BhdGggPSBzbGFzaC5yZXNvbHZlIHNsYXNoLmpvaW4gb3V0RGlyLCBzbGFzaC5iYXNlKGFwcE5hbWUpICsgXCIucG5nXCJcbiAgICAgICAgICAgICAgICBjaGlsZHAuZXhlY1N5bmMgXCIvdXNyL2Jpbi9zaXBzIC1aICN7c2l6ZX0gLXMgZm9ybWF0IHBuZyBcXFwiI3tzbGFzaC5lc2NhcGUgaWNuc1BhdGh9XFxcIiAtLW91dCBcXFwiI3tzbGFzaC5lc2NhcGUgcG5nUGF0aH1cXFwiXCJcbiAgICAgICAgICAgICAgICBmcy5hY2Nlc3NTeW5jIHBuZ1BhdGgsIGZzLlJfT0tcbiAgICAgICAgICAgICAgICByZXR1cm4gcG5nUGF0aFxuICAgICAgICBjYXRjaCBlcnJcbiAgICAgICAgICAgIGNvbnRpbnVlXG4iXX0=
+//# sourceURL=../coffee/appiconsync.coffee
