@@ -1,7 +1,7 @@
 {
   "name": "clippo",
   "productName": "clippo",
-  "version": "1.53.0",
+  "version": "1.54.0",
   "description": "clipboard tool",
   "main": "js/main.js",
   "repository": "github:monsterkodi/clippo",

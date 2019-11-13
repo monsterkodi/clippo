@@ -6,7 +6,7 @@
  0000000  0000000  000  000        000         0000000
 ###
 
-{ post, setStyle, slash, clamp, valid, prefs, elem, kstr, win, $, _ } = require 'kxk'
+{ post, setStyle, valid, prefs, slash, clamp, elem, kstr, win, $, _ } = require 'kxk'
 
 pkg       = require '../package.json'
 electron  = require 'electron'
@@ -22,7 +22,7 @@ buffers = []
 main    =$ "#main"
 main.style.overflow = 'scroll'
 
-doPaste = -> post.toMain 'paste', current
+doPaste = -> post.toMain 'paste' current
 
 # 000   000  000   0000000   000   000  000      000   0000000   000   000  000000000
 # 000   000  000  000        000   000  000      000  000        000   000     000
@@ -63,13 +63,13 @@ lineForTarget = (target) ->
     if upElem = elem.upElem target, { class:'line-div' }
         return parseInt upElem.id.substr 4
     
-main.addEventListener 'mouseover', (event) ->
+main.addEventListener 'mouseover' (event) ->
     
     id = lineForTarget event.target
     if valid id
         highlight id
 
-main.addEventListener 'click', (event) ->
+main.addEventListener 'click' (event) ->
     
     id = lineForTarget event.target
     if valid id
@@ -90,7 +90,7 @@ loadBuffers = (buffs, index) ->
     buffers = buffs
     
     if buffers.length == 0
-        s = prefs.get 'scheme', 'dark'
+        s = prefs.get 'scheme' 'dark'
         $('main').innerHTML = "<center><img class='info' src=\"#{__dirname}/../img/empty_#{s}.png\"></center>"
         return
 
@@ -100,14 +100,14 @@ loadBuffers = (buffs, index) ->
 
     i = 0
     for buf in buffers
-        div = elem id: "line#{i}", class: 'line-div', child:
-            elem 'span', class: 'line-span', children: [
-                elem 'img', class: 'appicon', src: "#{iconDir}/#{buf.app}.png"
+        div = elem id:"line#{i}" class:'line-div' child:
+            elem 'span' class:'line-span' children: [
+                elem 'img' class:'appicon' src:"#{iconDir}/#{buf.app}.png"
                 if buf.image?
-                    elem 'img', src: "data:image/png;base64,#{buf.image}", class: 'image'
-                else if buf.text?
+                    elem 'img' src:"data:image/png;base64,#{buf.image}" class: 'image'
+                else if buf.text?.split
                     encl = ( kstr.encode(l) for l in buf.text.split "\n" )
-                    elem 'pre', html: encl.join "<br>"
+                    elem 'pre' html:encl.join "<br>"
                 else
                     elem 'pre'
                 ]
@@ -129,15 +129,15 @@ getFontSize = -> prefs.get 'fontSize', defaultFontSize
 setFontSize = (s) ->
         
     s = getFontSize() if not _.isFinite s
-    s = clamp 4, 44, s
+    s = clamp 4 44 s
 
-    prefs.set "fontSize", s
+    prefs.set "fontSize" s
 
-    setStyle "#buffer", 'font-size', "#{s}px"
-    iconSize = clamp 18, 64, s * 2
-    setStyle 'img.appicon', 'height', "#{iconSize}px"
-    setStyle 'img.appicon', 'width',  "#{iconSize}px"
-    setStyle 'img.appicon', 'padding-top',  "6px"
+    setStyle "#buffer" 'font-size' "#{s}px"
+    iconSize = clamp 18 64 s*2
+    setStyle 'img.appicon' 'height' "#{iconSize}px"
+    setStyle 'img.appicon' 'width'  "#{iconSize}px"
+    setStyle 'img.appicon' 'padding-top'  "6px"
 
 changeFontSize = (d) ->
     
@@ -160,7 +160,7 @@ onWheel = (event) ->
         changeFontSize -event.deltaY/100
   
 setFontSize getFontSize()
-window.document.addEventListener 'wheel', onWheel    
+window.document.addEventListener 'wheel' onWheel    
     
 #  0000000   0000000   00     00  0000000     0000000   
 # 000       000   000  000   000  000   000  000   000  
@@ -171,13 +171,13 @@ window.document.addEventListener 'wheel', onWheel
 post.on 'combo', (combo, info) ->
 
     switch combo
-        when 'esc'                                  then return post.toMain 'closeWin'
-        when 'down', 'right'                        then return highlight current-1
-        when 'up'  , 'left'                         then return highlight current+1
-        when 'home', 'page up'                      then return highlight buffers.length-1
-        when 'end',  'page down'                    then return highlight 0
-        when 'enter', 'command+v', 'ctrl+v'         then return doPaste()
-        when 'backspace', 'command+backspace', 'ctrl+backspace', 'delete' then return post.toMain 'del', current
+        when 'esc'                        then return post.toMain 'closeWin'
+        when 'down' 'right'               then return highlight current-1
+        when 'up'  , 'left'               then return highlight current+1
+        when 'home' 'page up'             then return highlight buffers.length-1
+        when 'end'  'page down'           then return highlight 0
+        when 'enter' 'command+v' 'ctrl+v' then return doPaste()
+        when 'backspace' 'command+backspace' 'ctrl+backspace' 'delete' then return post.toMain 'del' current
 
 # 00     00  00000000  000   000  000   000   0000000    0000000  000000000  000   0000000   000   000  
 # 000   000  000       0000  000  000   000  000   000  000          000     000  000   000  0000  000  
