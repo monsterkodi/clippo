@@ -6,7 +6,7 @@
 000   000  000   000  000  000   000
 ###
 
-{ watch, post, osascript, childp, slash, empty, first, prefs, noon, app, os, fs, kerror, klog, _ } = require 'kxk'
+{ post, osascript, childp, first, slash, prefs, empty, noon, app, os, fs, kerror, _ } = require 'kxk'
 
 electron = require 'electron'
 pkg      = require '../package.json'
@@ -106,7 +106,7 @@ winClipboardChanged = ->
     winInfo = first wxw 'info' 'top'
 
     appName = slash.base winInfo.path
-    exclude = prefs.get 'exclude', ['password-turtle']
+    exclude = prefs.get 'exclude' ['password-turtle']
     if not empty exclude
         for exapp in exclude
             return if appName.startsWith exapp
