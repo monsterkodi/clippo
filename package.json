@@ -1,7 +1,7 @@
 {
   "name": "clippo",
   "productName": "clippo",
-  "version": "1.54.0",
+  "version": "1.55.0",
   "description": "clipboard tool",
   "main": "js/main.js",
   "repository": "github:monsterkodi/clippo",
@@ -24,7 +24,7 @@
     "chokidar": "^3.3.0",
     "electron-clipboard-watcher": "^1.0.1",
     "html-entities": "^1.2.1",
-    "kxk": "^0.366.0"
+    "kxk": "^0.370.0"
   },
   "optionalDependencies": {
     "wxw": "^1.88.0",

@@ -44,11 +44,10 @@ appName       = 'clippo'
 # 000        000   000       000     000
 # 000         0000000   0000000      000
 
-post.on 'paste',      (index) -> pasteIndex index
-post.on 'del',        (index) -> deleteIndex index
-post.onGet 'buffers', ()      -> buffers
-post.on 'clearBuffer', -> clearBuffer()
-post.on 'saveBuffer',  -> saveBuffer()
+post.on 'paste'      (index) -> pasteIndex index
+post.on 'del'        (index) -> deleteIndex index
+post.onGet 'buffers' ()      -> buffers
+post.on 'clearBuffer'        -> clearBuffer()
 
 # 0000000    0000000  000000000  000  000   000  00000000
 #000   000  000          000     000  000   000  000
@@ -61,7 +60,6 @@ getActiveApp = ->
     if os.platform() == 'win32'
         wxw = require 'wxw'
         info = first wxw 'info' 'top'
-        # klog 'getActiveApp' info
         appName = slash.base info.path
     else if os.platform() == 'darwin'
         script = osascript """
