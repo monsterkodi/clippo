@@ -6,7 +6,7 @@
 000   000  000   000  000  000   000
 ###
 
-{ post, osascript, childp, first, slash, prefs, empty, noon, app, os, fs, kerror, _ } = require 'kxk'
+{ _, app, childp, empty, first, fs, kerror, noon, os, osascript, post, prefs, slash } = require 'kxk'
 
 electron = require 'electron'
 pkg      = require '../package.json'
@@ -209,7 +209,7 @@ pasteIndex = (index) ->
                 wxw 'key' 'ctrl+v'
         app.win.close()
         setTimeout paste, 20
-    else if os.platform() != 'darwin'
+    else if os.platform() == 'darwin'
         childp.execSync "osascript " + osascript """
             tell application "System Events" to keystroke tab using command down
         """
