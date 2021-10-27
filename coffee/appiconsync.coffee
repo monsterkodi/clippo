@@ -4,7 +4,7 @@
 #000   000  000        000        000  000       000   000  000  0000       000     000     000  0000  000     
 #000   000  000        000        000   0000000   0000000   000   000  0000000      000     000   000   0000000
 
-{ resolve, childp, slash, childp, fs } = require 'kxk' 
+{ childp, fs, slash } = require 'kxk'
 
 module.exports = (appName, outDir=".", size=1024) ->
 
@@ -12,7 +12,6 @@ module.exports = (appName, outDir=".", size=1024) ->
 
     for appFolder in [
             "/Applications"
-            "/Applications/Utilities"
             "/System/Library/CoreServices"
             "~/Applications"
         ]
@@ -32,4 +31,5 @@ module.exports = (appName, outDir=".", size=1024) ->
                 fs.accessSync pngPath, fs.R_OK
                 return pngPath
         catch err
+            # error err
             continue

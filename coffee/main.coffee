@@ -120,7 +120,7 @@ macClipboardChanged = ->
     currentApp = 'clippo' if currentApp.toLowerCase() == 'electron'
     originApp  = 'clippo' if (not originApp) and (not currentApp)
 
-    saveAppIcon originApp ? currentApp
+    appName = saveAppIcon originApp ? currentApp
 
     onClipboardChanged()
     
@@ -235,7 +235,7 @@ quit = ->
 
 reload = (index=0) ->
 
-    post.toWins 'loadBuffers', buffers, index
+    post.toWins 'loadBuffers' buffers, index
 
 clearBuffer = ->
 
@@ -245,7 +245,7 @@ clearBuffer = ->
 
 saveBuffer = ->
 
-    noon.save "#{app.userData}/buffers.noon", buffers.slice(- prefs.get('maxBuffers', 50))
+    noon.save "#{app.userData}/buffers.noon" buffers.slice(- prefs.get('maxBuffers', 50))
 
 readBuffer = ->
 
@@ -261,7 +261,7 @@ readBuffer = ->
 #000   000  000       000   000  000   000     000
 #000   000  00000000  000   000  0000000       000
 
-post.on 'appReady', ->
+post.on 'appReady' ->
 
     readBuffer()
 

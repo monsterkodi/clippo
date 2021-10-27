@@ -5,6 +5,7 @@ Icon?
 bin/*.json
 *.dmg
 *-x64
+*-arm64
 *-ia32
 css
 *.html

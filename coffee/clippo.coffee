@@ -6,7 +6,7 @@
  0000000  0000000  000  000        000         0000000
 ###
 
-{ post, setStyle, valid, prefs, slash, clamp, elem, kstr, win, $, _ } = require 'kxk'
+{ $, _, clamp, elem, kstr, post, prefs, setStyle, slash, valid, win } = require 'kxk'
 
 pkg       = require '../package.json'
 electron  = require 'electron'
@@ -94,7 +94,7 @@ loadBuffers = (buffs, index) ->
         $('main').innerHTML = "<center><img class='info' src=\"#{__dirname}/../img/empty_#{s}.png\"></center>"
         return
 
-    iconDir = slash.encode slash.join electron.remote.app.getPath('userData'), 'icons'
+    iconDir = slash.encode slash.join post.get('userData'), 'icons'
 
     $('main').innerHTML = "<div id='buffer'></div>"
 
