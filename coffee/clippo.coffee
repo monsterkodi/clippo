@@ -168,7 +168,7 @@ window.document.addEventListener 'wheel' onWheel
 # 000       000   000  000 0 000  000   000  000   000  
 #  0000000   0000000   000   000  0000000     0000000   
 
-post.on 'combo', (combo, info) ->
+post.on 'combo' (combo, info) ->
 
     switch combo
         when 'esc'                        then return post.toMain 'closeWin'
@@ -185,7 +185,7 @@ post.on 'combo', (combo, info) ->
 # 000 0 000  000       000  0000  000   000  000   000  000          000     000  000   000  000  0000  
 # 000   000  00000000  000   000   0000000   000   000   0000000     000     000   0000000   000   000  
 
-post.on 'menuAction', (action) ->
+post.on 'menuAction' (action) ->
 
     switch action
         when 'Clear'    then post.toMain 'clearBuffer'

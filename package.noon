@@ -7,6 +7,10 @@ repository      github:monsterkodi/clippo
 scripts
                 mac   bash ./bin/buildmac.sh
                 win   bash ./bin/buildwin.sh
+build
+                asar  false
+                mac
+                  icon  img/app.icns
 keywords
                 copy
                 paste
@@ -26,6 +30,5 @@ optionalDependencies
                 wxw           ^1.89.0
 devDependencies
                 electron        ^15.3.0
-                electron-packager  ^15.4.0
-                electron-rebuild  ^3.2.3
+                electron-builder  ^22.13.1
                 konrad          ^0.187.0
